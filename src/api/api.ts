@@ -2,7 +2,7 @@
 import { HairCutPaginated, RatesPaginated, SchedulesPaginated } from "src/types/Paginated";
 import { Schedule } from "src/types/Schedule";
 
-const isProd = false;
+const isProd = true;
 const API_BASE_URL = isProd ? 'https://corte-certo-backend-typescript.onrender.com' : 'http://localhost:3000';
 
 interface LoginData {
