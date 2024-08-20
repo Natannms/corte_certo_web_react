@@ -1,9 +1,8 @@
 // src/api/api.ts
-
 import { HairCutPaginated, RatesPaginated, SchedulesPaginated } from "src/types/Paginated";
 import { Schedule } from "src/types/Schedule";
 
-const isProd = true;
+const isProd = false;
 const API_BASE_URL = isProd ? 'https://corte-certo-backend-typescript.onrender.com' : 'http://localhost:3000';
 
 interface LoginData {
@@ -20,9 +19,25 @@ interface RegisterData {
 
 interface ErrorResponse {
     error: string;
+    message?: string;
+    expiredToken? : boolean;
 }
 
-export async function login(data: LoginData): Promise<Response | ErrorResponse> {
+export type AuthResponse = {
+    error? : string;
+    token? : string;
+    user?: {
+        name: string;
+        email: string;
+        type: string;
+        id: number;
+        profilePhotoPath: string;
+        createdAt: string;
+        updatedAt: string;
+    }
+}
+
+export async function login(data: LoginData): Promise<AuthResponse> {
     try {
         const response = await fetch(`${API_BASE_URL}/auth/login`, {
             method: 'POST',
@@ -38,7 +53,8 @@ export async function login(data: LoginData): Promise<Response | ErrorResponse> 
         }
         return response.json();
     } catch (error) {
-        return { error: `Network error: ${error.message}` };
+        return { error: `Network error: ${(error as Error).message}` };
+
     }
 }
 
@@ -59,7 +75,8 @@ export async function register(data: RegisterData): Promise<Response | ErrorResp
 
         return response;
     } catch (error) {
-        return { error: `Network error: ${error.message}` };
+        return { error: `Network error: ${(error as Error).message}` };
+
     }
 }
 
@@ -83,7 +100,7 @@ export async function getHaircuts(token: string, userId: number): Promise<HairCu
         const data = await response.json();                
         return data;
     } catch (error) {
-        return { error: `Network error: ${error.message}` };
+        return { error: `Network error: ${(error as Error).message}`, data: [], total: 0, totalPages: 0 };
     }
 }
 
@@ -105,7 +122,8 @@ export async function getSchedules(token: string, userId: number): Promise<Sched
         const data = await response.json();        
         return data;
     } catch (error) {
-        return { error: `Network error: ${error.message}` };
+        return { error: `Network error: ${(error as Error).message}`, data: [], total: 0, totalPages: 0 };
+
     }
 }
 export async function getRates(token: string, userId: number): Promise<RatesPaginated> {
@@ -126,11 +144,11 @@ export async function getRates(token: string, userId: number): Promise<RatesPagi
         const data = await response.json();        
         return data;
     } catch (error) {
-        return { error: `Network error: ${error.message}`, data: [], total:0, totalPages:0 };
+        return { error: `Network error: ${(error as Error).message}`, data: [], total: 0, totalPages: 0 };
     }
 }
 
-export async function updateSchedule(token: string, scheduleId: number, data: Partial<Schedule>): Promise<{ success: boolean; error?: string }> {
+export async function updateSchedule(token: string, scheduleId: number, data: Partial<Schedule>): Promise<{ success: boolean; error?: string } | ErrorResponse> {
     console.log(data);
     
     try {
@@ -150,7 +168,8 @@ export async function updateSchedule(token: string, scheduleId: number, data: Pa
 
         return { success: true };
     } catch (error) {
-        return { success: false, error: `Network error: ${error.message}` };
+        return { error: `Network error: ${(error as Error).message}` };
+
     }
 }
 

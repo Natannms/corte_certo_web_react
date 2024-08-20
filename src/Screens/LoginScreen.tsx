@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import bg from '../assets/backgrounds/signin.jpg';
-import { login } from '../api/api'; // Assumindo que a função de login foi criada no arquivo `api.ts`
+import { AuthResponse, login } from '../api/api'; // Assumindo que a função de login foi criada no arquivo `api.ts`
 import { NavigateFunction, useNavigate } from 'react-router-dom';
 import Lottie from "lottie-react";
 import loadingLottie from "../assets/lottie/loading.json";
@@ -14,22 +14,25 @@ const LoginScreen = () => {
     const [isLoading, setIsLoading] = useState(true);
 
     const handleLogin = async () => {
-        setError(''); // Reset error state
-
-        // Enviar os dados de login para o backend
-        const response: Response = await login({ email, password });
+        setError(''); 
+        const response: AuthResponse = await login({ email, password });
 
         if (response.error) {
             setError(response.error);
         } else {
             const { user, token } = response;
 
-            localStorage.setItem('token', token);
-            localStorage.setItem('userId', user.id);
-            localStorage.setItem('userName', user.name);
-            localStorage.setItem('userEmail', user.email);
+            if(token && user){
+                localStorage.setItem('token', token);
+                localStorage.setItem('userId', user.id.toString());
+                localStorage.setItem('userName', user.name);
+                localStorage.setItem('userEmail', user.email);
+                navigate('/dashboard', { replace: true, state: { user } })
+                return;
+            }
+            
+            setError("Não foi possivel realiar login, dados não foram obtidos corretamente!");
 
-            navigate('/dashboard', { replace: true, state: { user } })
         }
     };
 

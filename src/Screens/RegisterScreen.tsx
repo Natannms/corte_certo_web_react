@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { register } from '../api/api';
 import bg from '../assets/backgrounds/signin.jpg';
 

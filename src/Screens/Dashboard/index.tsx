@@ -1,15 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { getHaircuts, getRates, getSchedules, updateSchedule } from '../../api/api'; // Importando a nova função
 import { NavigateFunction, useNavigate } from 'react-router-dom';
 import { Scissors, Calendar, ArrowCircleRight, ArrowCircleLeft, CheckCircle, OfficeChair, ReceiptX, FlagCheckered, HourglassHigh, FileX, Sparkle, ThumbsDown, StackPlus, Play, List } from '@phosphor-icons/react'; // Adicionando ícone para schedules
-import { HairCutPaginated, RatesPaginated, SchedulesPaginated } from 'src/types/Paginated';
+import { HairCutPaginated, SchedulesPaginated } from 'src/types/Paginated';
 import { Rate } from 'src/types/Rate';
 
 const Dashboard = () => {
     const navigate: NavigateFunction = useNavigate();
     const [haircuts, setHaircuts] = useState<HairCutPaginated>({ data: [], total: 0, totalPages: 0 }); // Estado para armazenar os haircuts
     const [schedules, setSchedules] = useState<SchedulesPaginated>({ data: [], total: 0, totalPages: 0 }); // Estado para armazenar os schedules
-    const [rates, setRates] = useState<RatesPaginated>({ data: [], total: 0, totalPages: 0 }); // Estado para armazenar os rates
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [highestRate, setHighestRate] = useState<Rate | null>(null)
@@ -18,7 +17,6 @@ const Dashboard = () => {
 
     //paginate Schedule
     const [rangePage, setRangePage] = useState([0, 4])
-    const [rangeConfirmedSchedule] = useState([0, 2])
     function nextSchedule() {
         console.log(schedules.data.length, `esquerda ${rangePage[0]} e direita ${rangePage[1]}`);
         if (rangePage[1] < schedules.data.length) {
@@ -57,7 +55,9 @@ const Dashboard = () => {
                 loading();
                 return;
             }
-            setHaircuts(haircutResult);
+            if(haircutResult.data){
+                setHaircuts(haircutResult);
+            }
 
             // Carregar Schedules
             const scheduleResult = await getSchedules(token, Number(userId));
@@ -86,7 +86,7 @@ const Dashboard = () => {
                 return;
             }
 
-            setRates(ratesResult);
+            // setRates(ratesResult);
             setHighestRate(getHighestRate(ratesResult.data))
             setLowestRate(getLowestRate(ratesResult.data))
             setAverageRate(calculateAverageRate(ratesResult.data))
@@ -349,6 +349,7 @@ const Dashboard = () => {
                     </label>
                 </div>
                 <div className="flex flex-col gap-4 items-start w-full mb-4">
+                {error &&<div className="bg-red-500"> {error} </div>}
                     <div className='w-full bg-stone-800 p-4 rounded flex flex-col md:flex-row gap-4 items-center justify-items-center'>
                         <div className='md:w-5/12 w-full  p-4 rounded flex flex-col gap-4'>
                             <h1 className='text-2xl font-bold'>Barber Ratings</h1>
