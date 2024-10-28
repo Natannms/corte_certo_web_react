@@ -11,6 +11,7 @@ import RegisterScreen from './Screens/RegisterScreen.tsx';
 import LoginScreen from './Screens/LoginScreen.tsx';
 import Dashboard from './Screens/Dashboard/index.tsx';
 
+
 const router = createBrowserRouter([
   {
     path: "/",

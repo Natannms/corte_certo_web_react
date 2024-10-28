@@ -2,8 +2,8 @@
 import { HairCutPaginated, RatesPaginated, SchedulesPaginated } from "src/types/Paginated";
 import { Schedule } from "src/types/Schedule";
 
-const isProd = true;
-const API_BASE_URL = isProd ? 'https://corte-certo-backend-typescript.onrender.com' : 'http://localhost:3000';
+const isProd = false;
+const API_BASE_URL = isProd ? 'https://corte-certo-backend-typescript.onrender.com' : 'http://localhost:8080';
 
 interface LoginData {
     email: string;
@@ -80,10 +80,10 @@ export async function register(data: RegisterData): Promise<Response | ErrorResp
     }
 }
 
-export async function getHaircuts(token: string, userId: number): Promise<HairCutPaginated> {
+export async function getHaircuts(token: string): Promise<HairCutPaginated> {
     try {
         
-        const response = await fetch(`${API_BASE_URL}/haircuts/${userId}`, {
+        const response = await fetch(`${API_BASE_URL}/haircuts`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -104,9 +104,9 @@ export async function getHaircuts(token: string, userId: number): Promise<HairCu
     }
 }
 
-export async function getSchedules(token: string, userId: number): Promise<SchedulesPaginated> {
+export async function getSchedules(token: string): Promise<SchedulesPaginated> {
     try {
-        const response = await fetch(`${API_BASE_URL}/schedules?userId=${userId}`, {
+        const response = await fetch(`${API_BASE_URL}/schedules`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -126,9 +126,9 @@ export async function getSchedules(token: string, userId: number): Promise<Sched
 
     }
 }
-export async function getRates(token: string, userId: number): Promise<RatesPaginated> {
+export async function getRates(token: string): Promise<RatesPaginated> {
     try {
-        const response = await fetch(`${API_BASE_URL}/rates?userId=${userId}`, {
+        const response = await fetch(`${API_BASE_URL}/rates`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,

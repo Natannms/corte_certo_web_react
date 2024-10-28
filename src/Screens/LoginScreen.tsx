@@ -4,10 +4,11 @@ import { AuthResponse, login } from '../api/api'; // Assumindo que a função de
 import { NavigateFunction, useNavigate } from 'react-router-dom';
 import Lottie from "lottie-react";
 import loadingLottie from "../assets/lottie/loading.json";
-
+import { useUserStore } from '../contexts/useUserStore';
+import { toast } from 'react-toastify';
 const LoginScreen = () => {
     const navigate: NavigateFunction = useNavigate();
-
+    const {setName, setToken} = useUserStore()
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -19,19 +20,18 @@ const LoginScreen = () => {
 
         if (response.error) {
             setError(response.error);
+            toast(response.error);
         } else {
             const { user, token } = response;
-
             if(token && user){
-                localStorage.setItem('token', token);
-                localStorage.setItem('userId', user.id.toString());
-                localStorage.setItem('userName', user.name);
-                localStorage.setItem('userEmail', user.email);
+                setName(user.name)
+                setToken(token)
                 navigate('/dashboard', { replace: true, state: { user } })
                 return;
             }
             
             setError("Não foi possivel realiar login, dados não foram obtidos corretamente!");
+            toast("Não foi possivel realiar login, dados não foram obtidos corretamente!");
 
         }
     };
@@ -45,11 +45,6 @@ const LoginScreen = () => {
             navigate('/dashboard', {replace: true})
             return;
         }
-
-        localStorage.removeItem('token');
-        localStorage.removeItem('userId');
-        localStorage.removeItem('userName');
-        localStorage.removeItem('userEmail');
         setIsLoading(false);
     }
 

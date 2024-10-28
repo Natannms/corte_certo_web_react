@@ -1,31 +1,37 @@
 import { useState, useEffect } from 'react';
 import { getHaircuts, getRates, getSchedules, updateSchedule } from '../../api/api'; // Importando a nova função
 import { NavigateFunction, useNavigate } from 'react-router-dom';
-import { Scissors, Calendar, ArrowCircleRight, ArrowCircleLeft, CheckCircle, OfficeChair, ReceiptX, FlagCheckered, HourglassHigh, FileX, Sparkle, ThumbsDown, StackPlus, Play, List } from '@phosphor-icons/react'; // Adicionando ícone para schedules
-import { HairCutPaginated, SchedulesPaginated } from 'src/types/Paginated';
+import { Scissors, Calendar, ArrowCircleRight, ArrowCircleLeft, CheckCircle, OfficeChair, ReceiptX, FlagCheckered, HourglassHigh, FileX, Sparkle, ThumbsDown, StackPlus, Play, List, Package } from '@phosphor-icons/react'; // Adicionando ícone para schedules
 import { Rate } from 'src/types/Rate';
+import { useUserStore, useHairCutStore, useScheduleStore, useRateStore } from '../../contexts/';
+import { toast, ToastContainer} from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Dashboard = () => {
     const navigate: NavigateFunction = useNavigate();
-    const [haircuts, setHaircuts] = useState<HairCutPaginated>({ data: [], total: 0, totalPages: 0 }); // Estado para armazenar os haircuts
-    const [schedules, setSchedules] = useState<SchedulesPaginated>({ data: [], total: 0, totalPages: 0 }); // Estado para armazenar os schedules
+    // const [haircuts, setHaircuts] = useState<HairCutPaginated>({ data: [], total: 0, totalPages: 0 }); // Estado para armazenar os haircuts
+    // const [schedules, setSchedules] = useState<SchedulesPaginated>({ data: [], total: 0, totalPages: 0 }); // Estado para armazenar os schedules
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [highestRate, setHighestRate] = useState<Rate | null>(null)
     const [lowestRate, setLowestRate] = useState<Rate | null>(null)
     const [averateRate, setAverageRate] = useState<number>(0)
+    const {token} = useUserStore()
+    const {setHaircuts, haircuts} = useHairCutStore()
+    const {setSchedules, schedules} = useScheduleStore()
+    const {setRates} = useRateStore()
 
     //paginate Schedule
     const [rangePage, setRangePage] = useState([0, 4])
     function nextSchedule() {
-        console.log(schedules.data.length, `esquerda ${rangePage[0]} e direita ${rangePage[1]}`);
-        if (rangePage[1] < schedules.data.length) {
+        console.log(schedules.length, `esquerda ${rangePage[0]} e direita ${rangePage[1]}`);
+        if (rangePage[1] < schedules.length) {
             setRangePage([rangePage[0] + 4, rangePage[1] + 4])
         }
     }
     function previusSchedule() {
 
-        console.log(schedules.data.length, `esquerda ${rangePage[0]} e direita ${rangePage[1]}`);
+        console.log(schedules.length, `esquerda ${rangePage[0]} e direita ${rangePage[1]}`);
 
         if (rangePage[0] > 0) {
             setRangePage([rangePage[0] - 4, rangePage[1] - 4])
@@ -39,14 +45,11 @@ const Dashboard = () => {
 
     async function loadingData() {
         loading();
-
-        const token = localStorage.getItem('token');
-        const userId = localStorage.getItem('userId');
-        if (token && userId) {
+        if (token !== "" || token) {
             // Carregar Haircuts
-            const haircutResult = await getHaircuts(token, Number(userId));
+            const haircutResult = await getHaircuts(token);
             if (haircutResult.error) {
-                setError(haircutResult.error);
+                toast(haircutResult.error);
 
                 if (haircutResult.expiredToken) {
                     localStorage.clear();
@@ -55,12 +58,13 @@ const Dashboard = () => {
                 loading();
                 return;
             }
+
             if(haircutResult.data){
-                setHaircuts(haircutResult);
+                setHaircuts(haircutResult.data);
             }
 
             // Carregar Schedules
-            const scheduleResult = await getSchedules(token, Number(userId));
+            const scheduleResult = await getSchedules(token);
             if (scheduleResult.error) {
                 setError(scheduleResult.error);
 
@@ -71,10 +75,10 @@ const Dashboard = () => {
                 loading();
                 return;
             }
-            setSchedules(scheduleResult);
+            setSchedules(scheduleResult.data);
 
             // Carregar Rates
-            const ratesResult = await getRates(token, Number(userId));
+            const ratesResult = await getRates(token);
             if (ratesResult.error) {
                 setError(ratesResult.error);
 
@@ -86,7 +90,7 @@ const Dashboard = () => {
                 return;
             }
 
-            // setRates(ratesResult);
+            setRates(ratesResult.data);
             setHighestRate(getHighestRate(ratesResult.data))
             setLowestRate(getLowestRate(ratesResult.data))
             setAverageRate(calculateAverageRate(ratesResult.data))
@@ -170,6 +174,7 @@ const Dashboard = () => {
 
     return (
         <div className="flex flex-row sm:gap-10">
+            <ToastContainer />
             <div className="sm:w-full sm:max-w-[18rem]">
                 <input type="checkbox" id="sidebar-mobile-fixed" className="sidebar-state" />
                 <label htmlFor="sidebar-mobile-fixed" className="sidebar-overlay"></label>
@@ -197,11 +202,13 @@ const Dashboard = () => {
                                         <span>General</span>
                                     </li>
 
-                                    <li className="menu-item menu-active">
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 opacity-75" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                        </svg>
-                                        <span>Teams</span>
+                                    <li className="menu-item" onClick={()=>navigate("/products")}>
+                                        <Package  size={24} />
+                                        <span>Produtos</span>
+                                    </li>
+                                    <li className="menu-item" onClick={()=>navigate("/services")}>
+                                        <Scissors   size={24} />
+                                        <span>Cortes e Serviços</span>
                                     </li>
                                     <li className="menu-item">
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 opacity-75" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -380,8 +387,8 @@ const Dashboard = () => {
                         </div>
                         <div className=' w-full'>
                             <ul className='w-full bg-stone-800 p-4 rounded flex flex-col gap-4 '>
-                                {schedules.data.length > 0 &&
-                                    schedules.data
+                                {schedules.length > 0 &&
+                                    schedules
                                         .map((schedule) => {
                                             if (schedule.status === 'confirmed') {
                                                 return (
@@ -403,7 +410,7 @@ const Dashboard = () => {
                                         })
                                 }
 
-                                {schedules.data.filter((schedule) => schedule.status === 'confirmed').length <= 0 &&
+                                {schedules.filter((schedule) => schedule.status === 'confirmed').length <= 0 &&
                                     <div className='bg-stone-600 w-full p-2 text-center rounded-lg'>Nenhum agendamento confirmado !</div>
                                 }
                                 {/* <li className='flex justify-center items-center w-full gap-20 py-4'>
@@ -451,7 +458,7 @@ const Dashboard = () => {
                                 <div className="accordion-content text-content2">
                                     <div className="min-h-0">
                                         <ul className='w-full bg-stone-800 p-4 rounded flex flex-col gap-4'>
-                                            {haircuts.data.length > 0 && haircuts.data.map((haircut) => (
+                                            {haircuts.length > 0 && haircuts.map((haircut) => (
                                                 <li key={haircut.id} className='flex justify-between items-center'>
                                                     <div id="icon" className='bg-stone-950 rounded-lg p-2'>
                                                         <Scissors className='text-yellow-500' size={16} />
@@ -478,8 +485,8 @@ const Dashboard = () => {
                                 <div className="accordion-content text-content2">
                                     <div className="min-h-0">
                                         <ul className='w-full bg-stone-800 p-4 rounded flex flex-col gap-4 '>
-                                            {schedules.data.length > 0 &&
-                                                schedules.data
+                                            {schedules.length > 0 &&
+                                                schedules
                                                     .slice(rangePage[0], rangePage[1]) // Pega os primeiros 4 itens
                                                     .map((schedule) => (
                                                         <li key={schedule.id} className='flex justify-around items-center w-full accordion-group-bordered'>
