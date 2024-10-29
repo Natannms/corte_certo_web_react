@@ -3,8 +3,8 @@ import { HairCut } from "src/types/Haircut";
 import { HairCutPaginated, RatesPaginated, SchedulesPaginated } from "src/types/Paginated";
 import { Schedule } from "src/types/Schedule";
 
-const isProd = false;
-const API_BASE_URL = isProd ? 'https://corte-certo-backend-typescript.onrender.com' : 'http://localhost:8080';
+const isProd = true;
+const API_BASE_URL = isProd ? 'https://cortecertots-536925599617.us-east4.run.app' : 'http://localhost:8080';
 
 interface LoginData {
     email: string;
