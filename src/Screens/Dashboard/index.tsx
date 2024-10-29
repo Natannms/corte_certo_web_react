@@ -60,6 +60,7 @@ const Dashboard = () => {
             }
 
             if(haircutResult.data){
+                console.log(haircutResult.data);
                 setHaircuts(haircutResult.data);
             }
 

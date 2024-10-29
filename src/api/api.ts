@@ -1,4 +1,5 @@
-// src/api/api.ts
+// import { HairCut } from "src/types/Haircut";
+import { HairCut } from "src/types/Haircut";
 import { HairCutPaginated, RatesPaginated, SchedulesPaginated } from "src/types/Paginated";
 import { Schedule } from "src/types/Schedule";
 
@@ -35,6 +36,12 @@ export type AuthResponse = {
         createdAt: string;
         updatedAt: string;
     }
+}
+
+export type HairCutResponse = {
+    error?: string;
+    message?: string;
+    data?: HairCut
 }
 
 export async function login(data: LoginData): Promise<AuthResponse> {
@@ -74,6 +81,29 @@ export async function register(data: RegisterData): Promise<Response | ErrorResp
         }
 
         return response;
+    } catch (error) {
+        return { error: `Network error: ${(error as Error).message}` };
+
+    }
+}
+export async function createHaircut(data: FormData, token:string): Promise<HairCutResponse> {
+    try {
+        const response = await fetch(`${API_BASE_URL}/haircuts`, {
+            method: 'POST',
+            headers:{
+                'Authorization': `Bearer ${token}`,
+            },
+            body: data,
+        });
+        
+        if (!response.ok) {
+            const errorMessage = await response.text();
+            return { error: `Failed to register new service : ${errorMessage}` };
+        }   
+
+        const result = await response.json()
+        
+        return {data: result, message:"Criado com suceso !"};
     } catch (error) {
         return { error: `Network error: ${(error as Error).message}` };
 
