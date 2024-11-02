@@ -4,7 +4,7 @@ import { HairCutPaginated, RatesPaginated, SchedulesPaginated } from "src/types/
 import { Schedule } from "src/types/Schedule";
 
 const isProd = true;
-const API_BASE_URL = isProd ? 'https://boilerplate-255347785568.us-east4.run.app' : 'http://localhost:8080';
+const API_BASE_URL = isProd ? 'https://boilerplate-go.onrender.com' : 'http://localhost:8080';
 
 interface LoginData {
     email: string;
