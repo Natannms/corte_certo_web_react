@@ -6,12 +6,14 @@ const RegisterScreen = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [cpfCnpj, setCpfcnpj] = useState('');
+  const [address, setAddress] = useState('');
   const [isBarber, setIsBarber] = useState(false);
   const [error, setError] = useState<string | null>(null); // Para armazenar a mensagem de erro
   const [success, setSuccess] = useState<string | null>(null); // Para armazenar a mensagem de sucesso
 
   const handleRegister = async () => {
-    setError(null); // Limpa mensagens de erro anteriores
+    setError(""); // Limpa mensagens de erro anteriores
     setSuccess(null); // Limpa mensagens de sucesso anteriores
 
     const data = {
@@ -19,15 +21,23 @@ const RegisterScreen = () => {
       email,
       password,
       type: isBarber ? 'barber' : 'customer', // Define o tipo de usuário com base na checkbox
+      cpfCnpj,
+      address
     };
 
-    const response = await register(data);
-
-    if ('error' in response) {
-      setError(response.error);
+    const hasEmptyField = Object.values(data).some(value => value === '' || value === null || value === undefined);
+    if (hasEmptyField) {
+      setError("Um ou mais campos estão vazios.");
     } else {
-      setSuccess('Registration successful!'); // Sucesso
+      const response = await register(data);
+
+      if ('error' in response) {
+        setError(response.error);
+      } else {
+        setSuccess('Registration successful!'); // Sucesso
+      }
     }
+
   };
 
   return (
@@ -44,6 +54,7 @@ const RegisterScreen = () => {
         <h1 className='text-4xl font-bold mb-8'>Barber Shop App</h1>
         <div className='w-8/12'>
           <input
+            required
             type='text'
             placeholder='Nome'
             value={name}
@@ -51,6 +62,7 @@ const RegisterScreen = () => {
             className='w-full p-2 mb-4 bg-stone-700 text-white rounded'
           />
           <input
+            required
             type='email'
             placeholder='Email'
             value={email}
@@ -58,6 +70,23 @@ const RegisterScreen = () => {
             className='w-full p-2 mb-4 bg-stone-700 text-white rounded'
           />
           <input
+            required
+            type='cpfCnpj'
+            placeholder='CPF/CNPJ'
+            value={cpfCnpj}
+            onChange={(e) => setCpfcnpj(e.target.value)}
+            className='w-full p-2 mb-4 bg-stone-700 text-white rounded'
+          />
+          <input
+            required
+            type='address'
+            placeholder='Endereço'
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            className='w-full p-2 mb-4 bg-stone-700 text-white rounded'
+          />
+          <input
+            required
             type='password'
             placeholder='Senha'
             value={password}

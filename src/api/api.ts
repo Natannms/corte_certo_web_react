@@ -1,10 +1,11 @@
 // import { HairCut } from "src/types/Haircut";
 import { HairCut } from "src/types/Haircut";
-import { HairCutPaginated, RatesPaginated, SchedulesPaginated } from "src/types/Paginated";
+import { HairCutPaginated, ProductPaginated, RatesPaginated, SchedulesPaginated } from "src/types/Paginated";
+import { Product } from "src/types/Product";
 import { Schedule } from "src/types/Schedule";
 
 const isProd = true;
-const API_BASE_URL = isProd ? 'https://boilerplate-go.onrender.com' : 'http://localhost:8080';
+const API_BASE_URL = isProd ? 'https://cortecertots-536925599617.us-east4.run.app' : 'http://localhost:8080';
 
 interface LoginData {
     email: string;
@@ -15,7 +16,9 @@ interface RegisterData {
     name: string;
     email: string;
     password: string;
-    type: string; // Ou outro campo necessário para o registro
+    type: string;
+    cpfCnpj: string;
+    address: string;
 }
 
 interface ErrorResponse {
@@ -43,10 +46,15 @@ export type HairCutResponse = {
     message?: string;
     data?: HairCut
 }
+export type ProductResponse = {
+    error?: string;
+    message?: string;
+    data?: Product
+}
 
 export async function login(data: LoginData): Promise<AuthResponse> {
     try {
-        const response = await fetch(`${API_BASE_URL}/login`, {
+        const response = await fetch(`${API_BASE_URL}/auth/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -58,7 +66,7 @@ export async function login(data: LoginData): Promise<AuthResponse> {
             const errorMessage = await response.text();
             return { error: `Failed to login: ${errorMessage}` };
         }
-        return response.json();
+        return await response.json();
     } catch (error) {
         return { error: `Network error: ${(error as Error).message}` };
 
@@ -109,6 +117,30 @@ export async function createHaircut(data: FormData, token:string): Promise<HairC
 
     }
 }
+export async function createProduct(data: FormData, token:string): Promise<ProductResponse> {
+    try {
+        const response = await fetch(`${API_BASE_URL}/products`, {
+            method: 'POST',
+            headers:{
+                'Authorization': `Bearer ${token}`,
+            },
+            body: data,
+        });
+        
+        if (!response.ok) {
+            const errorMessage = await response.text();
+            return { error: `Failed to register new service : ${errorMessage}` };
+        }   
+
+        const result = await response.json()
+        console.log(result);
+        
+        return {data: result, message:"Criado com suceso !"};
+    } catch (error) {
+        return { error: `Network error: ${(error as Error).message}` };
+
+    }
+}
 
 export async function getHaircuts(token: string): Promise<HairCutPaginated> {
     try {
@@ -128,6 +160,32 @@ export async function getHaircuts(token: string): Promise<HairCutPaginated> {
         }
 
         const data = await response.json();                
+        return data;
+    } catch (error) {
+        return { error: `Network error: ${(error as Error).message}`, data: [], total: 0, totalPages: 0 };
+    }
+}
+
+export async function getProducts(token: string): Promise<ProductPaginated> {
+    try {
+        
+        const response = await fetch(`${API_BASE_URL}/products`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        
+        if (!response.ok) {
+            const err = await response.json();
+            err.error = `Failed to get products: ${err.message}`;
+            return err
+        }
+
+        const data = await response.json();      
+        console.log('pr', data);
+                  
         return data;
     } catch (error) {
         return { error: `Network error: ${(error as Error).message}`, data: [], total: 0, totalPages: 0 };

@@ -1,4 +1,5 @@
 import { HairCut } from "./Haircut"
+import { Product } from "./Product"
 import { Rate } from "./Rate"
 import { Schedule } from "./Schedule"
 
@@ -11,6 +12,13 @@ export type Paginated = {
 
 export type HairCutPaginated = {
     data: HairCut[], 
+    total: number, 
+    totalPages: number
+    error?: string
+    expiredToken?: any
+}
+export type ProductPaginated = {
+    data: Product[], 
     total: number, 
     totalPages: number
     error?: string

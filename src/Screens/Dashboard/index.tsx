@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { getHaircuts, getRates, getSchedules, updateSchedule } from '../../api/api'; // Importando a nova função
+import { getHaircuts, getProducts, getRates, getSchedules, updateSchedule } from '../../api/api'; // Importando a nova função
 import { NavigateFunction, useNavigate } from 'react-router-dom';
 import { Scissors, Calendar, ArrowCircleRight, ArrowCircleLeft, CheckCircle, OfficeChair, ReceiptX, FlagCheckered, HourglassHigh, FileX, Sparkle, ThumbsDown, StackPlus, Play, List, Package } from '@phosphor-icons/react'; // Adicionando ícone para schedules
 import { Rate } from 'src/types/Rate';
-import { useUserStore, useHairCutStore, useScheduleStore, useRateStore } from '../../contexts/';
+import { useUserStore, useHairCutStore, useScheduleStore, useRateStore, useProductStore } from '../../contexts/';
 import { toast, ToastContainer} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -18,9 +18,10 @@ const Dashboard = () => {
     const [averateRate, setAverageRate] = useState<number>(0)
     const {token} = useUserStore()
     const {setHaircuts, haircuts} = useHairCutStore()
+    const {setProducts} = useProductStore()
     const {setSchedules, schedules} = useScheduleStore()
     const {setRates} = useRateStore()
-
+    const {name} = useUserStore()
     //paginate Schedule
     const [rangePage, setRangePage] = useState([0, 4])
     function nextSchedule() {
@@ -62,6 +63,23 @@ const Dashboard = () => {
             if(haircutResult.data){
                 console.log(haircutResult.data);
                 setHaircuts(haircutResult.data);
+            }
+            // Carregar produtos
+            const productsResult = await getProducts(token);
+            if (productsResult.error) {
+                toast(haircutResult.error);
+
+                if (haircutResult.expiredToken) {
+                    localStorage.clear();
+                    navigate('/login', { replace: true });
+                }
+                loading();
+                return;
+            }
+
+            if(productsResult.data){
+                console.log(productsResult.data);
+                setProducts(productsResult.data);
             }
 
             // Carregar Schedules
@@ -333,7 +351,7 @@ const Dashboard = () => {
                                     </div>
 
                                     <div className="flex flex-col">
-                                        <span>Sandra Marx</span>
+                                        <span>{name}</span>
                                     </div>
                                 </div>
                             </label>
@@ -436,7 +454,7 @@ const Dashboard = () => {
                                 <div className="modal-content flex flex-col gap-5 max-w-3xl">
                                     <label htmlFor="modal-2" className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</label>
                                     <h2 className="text-xl">Novo agendamento</h2>
-                                    <span>Lorem ipsum dolor sit amet consectetur adipisicing elit. Tenetur dolorum voluptate ratione dicta. Maxime cupiditate, est commodi consectetur earum iure, optio, obcaecati in nulla saepe maiores nobis iste quasi alias!</span>
+                                    <span>A opção de cadatro de agendamneto esta em manutenção aguarde novas atualizações</span>
                                     <div className="flex gap-3">
                                         <button className="btn btn-error btn-block">Delete</button>
                                         <button className="btn btn-block">Cancel</button>

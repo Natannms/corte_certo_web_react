@@ -4,6 +4,7 @@ import { useEffect} from 'react';
 import HairCutTable from '../../components/HairCutTable';
 import HairCutForm from '../../components/HaircutForm';
 import { ToastContainer } from 'react-toastify';
+import { ArrowLeft } from '@phosphor-icons/react';
 
 const HaircutScreen = () => {
     const { token } = useUserStore();
@@ -28,7 +29,8 @@ const HaircutScreen = () => {
                     <HairCutForm />
                 </div>
             }
-                <div className="w-full p-6 flex items-center justify-end">
+               <div className="w-full p-6 flex items-center justify-between">
+                    <button className='btn bg-zinc-500 flex gap-4' onClick={()=>navigate("/dashboard")}><ArrowLeft size={24} color='white' /> Voltar</button>
                     <button onClick={()=>setShowCreateForm()} className="btn btn-primary">Novo Serviço</button>
                 </div>
                 <HairCutTable />

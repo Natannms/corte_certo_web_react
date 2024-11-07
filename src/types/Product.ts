@@ -5,8 +5,8 @@ export type Product = {
     name: string;
     price: number;
     quantity: number | null;
-    imageName: string | null;
-    imageUrl: string | null;
+    imageName: string;
+    imageUrl: string;
     createdAt?: Date;
     updatedAt?: Date;
 }

@@ -11,6 +11,7 @@ import RegisterScreen from './Screens/RegisterScreen.tsx';
 import LoginScreen from './Screens/LoginScreen.tsx';
 import Dashboard from './Screens/Dashboard/index.tsx';
 import HaircutScreen from './Screens/Dashboard/HaircutScreen.tsx';
+import ProductScreen from './Screens/Dashboard/ProductScreen.tsx';
 
 
 const router = createBrowserRouter([
@@ -37,6 +38,10 @@ const router = createBrowserRouter([
   {
     path: "/services",
     element: <HaircutScreen />,
+  },
+  {
+    path: "/products",
+    element: <ProductScreen />,
   },
 ]);
 createRoot(document.getElementById('root')!).render(

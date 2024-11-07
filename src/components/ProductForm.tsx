@@ -1,16 +1,19 @@
 import React, { useState } from 'react'  
-import { createHaircut } from '../api/api';
-import {useUserStore, useHairCutStore} from '../contexts'
+import { createProduct } from '../api/api';
+import {useUserStore, useProductStore} from '../contexts'
 import { toast } from 'react-toastify';
 import { X } from '@phosphor-icons/react';
 
-const HairCutForm = () => {  
+const ProductForm = () => {  
     const [name, setName] = useState<string>('');
     const [description, setDescription] = useState<string>('');
     const [price, setPrice] = useState<number | ''>('');
+    const [quantity, setQuantity,] = useState<number | ''>('');
     const [image, setImage] = useState<File | null>(null);
+
     const {token} = useUserStore()
-    const {addHaircut, setShowCreateForm} = useHairCutStore()
+    const {addProduct, setShowCreateForm} = useProductStore()
+
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
 
@@ -18,34 +21,35 @@ const HairCutForm = () => {
         formData.append('name', name);
         formData.append('description', description);
         formData.append('price', String(price));
+        formData.append('quantity', String(quantity));
         if (image) {
             formData.append('image', image);
         }
 
         // Enviar o formData para o servidor
         try {
-           const response = await createHaircut(formData, token)
+           const response = await createProduct(formData, token)
            if(response.data){
-               addHaircut(response.data)
+               addProduct(response.data)
            }
             // Lidar com a resposta aqui
             toast(response.message, {type:"success"});
             setShowCreateForm()
         } catch (error) {
-            toast('Erro ao registrar novo corte ou serviço:' + error, {type:'error'} );
-            console.error('Erro ao registrar novo corte ou serviço:', error);
+            toast('Erro ao registrar novo produto:' + error, {type:'error'} );
+            console.error('Erro ao registrar novo produto:', error);
         }
     };
 
     return (
         <form onSubmit={handleSubmit} className='bg-zinc-900 p-6 flex flex-col gap-8 rounded'>
-            <div className='flex w-full justify-between'>
-                <h2 className='text-2xl'>Cadastrar novo serviço</h2>
+             <div className='flex w-full justify-between'>
+                <h2 className='text-2xl'>Cadastrar novo produto</h2>
                 <button className='bg-red-500 rounded-full w-6 h-6 items-center flex justify-center'><X size={18} color='white' onClick={()=>setShowCreateForm()}/></button>
              </div>
             <div className="divider"></div>
             <div className="flex flex-col"> 
-                <label htmlFor="name">Nome do serviço ou corte:</label>
+                <label htmlFor="name">Nome do produto:</label>
                 <input className="input"
                     type="text"
                     id="name"
@@ -77,6 +81,18 @@ const HairCutForm = () => {
                 />
             </div>
             <div className="flex flex-col">
+                <label htmlFor="quantity">Quantidade:</label>
+                <input className="input"
+                    type="number"
+                    id="quantity"
+                    value={quantity}
+                    onChange={(e) => setQuantity(Number(e.target.value))}
+                    required
+                    min="0"
+                    step="0.01"
+                />
+            </div>
+            <div className="flex flex-col">
                 <label htmlFor="image">Imagem:</label>
                 <input  className="input-file"
                     type="file"
@@ -91,10 +107,10 @@ const HairCutForm = () => {
                 />
             </div>
             <div>
-                <button type="submit" className='btn btn-primary w-full'>Cadastrar</button>
+                <button type="submit" className='btn btn-primary w-full'>Cadastrar Produto</button>
             </div>
         </form>
     );  
 
 }
-export default HairCutForm; 
+export default ProductForm; 
