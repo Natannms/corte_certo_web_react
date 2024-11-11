@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { getHaircuts, getProducts, getRates, getSchedules, updateSchedule } from '../../api/api'; // Importando a nova função
+import { getBarberShops, getHaircuts, getProducts, getRates, getSchedules, updateSchedule } from '../../api/api'; // Importando a nova função
 import { NavigateFunction, useNavigate } from 'react-router-dom';
-import { Scissors, Calendar, ArrowCircleRight, ArrowCircleLeft, CheckCircle, OfficeChair, ReceiptX, FlagCheckered, HourglassHigh, FileX, Sparkle, ThumbsDown, StackPlus, Play, List, Package } from '@phosphor-icons/react'; // Adicionando ícone para schedules
+import { Scissors, Calendar, ArrowCircleRight, ArrowCircleLeft, CheckCircle, OfficeChair, ReceiptX, FlagCheckered, HourglassHigh, FileX, Sparkle, ThumbsDown, StackPlus, Play, List, Package, Warehouse } from '@phosphor-icons/react'; // Adicionando ícone para schedules
 import { Rate } from 'src/types/Rate';
-import { useUserStore, useHairCutStore, useScheduleStore, useRateStore, useProductStore } from '../../contexts/';
+import { useUserStore, useHairCutStore, useScheduleStore, useRateStore, useProductStore, useBarberShopStore } from '../../contexts/';
 import { toast, ToastContainer} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -20,20 +20,17 @@ const Dashboard = () => {
     const {setHaircuts, haircuts} = useHairCutStore()
     const {setProducts} = useProductStore()
     const {setSchedules, schedules} = useScheduleStore()
+    const {setBarberShops} = useBarberShopStore()
     const {setRates} = useRateStore()
     const {name} = useUserStore()
     //paginate Schedule
     const [rangePage, setRangePage] = useState([0, 4])
     function nextSchedule() {
-        console.log(schedules.length, `esquerda ${rangePage[0]} e direita ${rangePage[1]}`);
         if (rangePage[1] < schedules.length) {
             setRangePage([rangePage[0] + 4, rangePage[1] + 4])
         }
     }
     function previusSchedule() {
-
-        console.log(schedules.length, `esquerda ${rangePage[0]} e direita ${rangePage[1]}`);
-
         if (rangePage[0] > 0) {
             setRangePage([rangePage[0] - 4, rangePage[1] - 4])
         }
@@ -47,6 +44,23 @@ const Dashboard = () => {
     async function loadingData() {
         loading();
         if (token !== "" || token) {
+            // Carregar franquias
+            const barberShopResult = await getBarberShops(token);
+            if (barberShopResult.error) {
+                toast(barberShopResult.error);
+
+                if (barberShopResult.expiredToken) {
+                    localStorage.clear();
+                    navigate('/login', { replace: true });
+                }
+                loading();
+                return;
+            }
+
+            if(barberShopResult.data){
+                setBarberShops(barberShopResult.data);
+            }
+
             // Carregar Haircuts
             const haircutResult = await getHaircuts(token);
             if (haircutResult.error) {
@@ -61,7 +75,6 @@ const Dashboard = () => {
             }
 
             if(haircutResult.data){
-                console.log(haircutResult.data);
                 setHaircuts(haircutResult.data);
             }
             // Carregar produtos
@@ -78,7 +91,6 @@ const Dashboard = () => {
             }
 
             if(productsResult.data){
-                console.log(productsResult.data);
                 setProducts(productsResult.data);
             }
 
@@ -182,9 +194,8 @@ const Dashboard = () => {
             navigate('/login', { replace: true });
             return;
         }
-        const update = await updateSchedule(token, id, { status })
+        await updateSchedule(token, id, { status })
         await loadingData();
-        console.log(update);
     }
 
     useEffect(() => {
@@ -228,6 +239,10 @@ const Dashboard = () => {
                                     <li className="menu-item" onClick={()=>navigate("/services")}>
                                         <Scissors   size={24} />
                                         <span>Cortes e Serviços</span>
+                                    </li>
+                                    <li className="menu-item" onClick={()=>navigate("/franchise")}>
+                                        <Warehouse    size={24} />
+                                        <span>Franquias</span>
                                     </li>
                                     <li className="menu-item">
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 opacity-75" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">

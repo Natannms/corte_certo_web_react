@@ -12,6 +12,7 @@ import LoginScreen from './Screens/LoginScreen.tsx';
 import Dashboard from './Screens/Dashboard/index.tsx';
 import HaircutScreen from './Screens/Dashboard/HaircutScreen.tsx';
 import ProductScreen from './Screens/Dashboard/ProductScreen.tsx';
+import BarberShopScreen from './Screens/Dashboard/BarberShopScreen.tsx';
 
 
 const router = createBrowserRouter([
@@ -42,6 +43,10 @@ const router = createBrowserRouter([
   {
     path: "/products",
     element: <ProductScreen />,
+  },
+  {
+    path: "/franchise",
+    element: <BarberShopScreen />,
   },
 ]);
 createRoot(document.getElementById('root')!).render(
