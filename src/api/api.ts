@@ -4,8 +4,7 @@ import { BarberShopPaginated, HairCutPaginated, ProductPaginated, RatesPaginated
 import { Product } from "src/types/Product";
 import { Schedule } from "src/types/Schedule";
 
-const isProd = false;
-const API_BASE_URL = isProd ? 'https://cortecertots-536925599617.us-east4.run.app' : 'http://localhost:8080';
+const API_BASE_URL =  import.meta.env.VITE_API_BASE_URL; 
 
 interface LoginData {
     email: string;
