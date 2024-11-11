@@ -50,6 +50,19 @@ export type ProductResponse = {
     message?: string;
     data?: Product
 }
+export type CrateColabResponse = {
+    error?: string;
+    message?: string;
+    data?: any
+}
+
+export type CreateColabData = {
+    name: string;
+    email: string;
+    password: string;
+    token: string;
+    unit: string;
+}
 
 export async function login(data: LoginData): Promise<AuthResponse> {
     try {
@@ -139,7 +152,35 @@ export async function createProduct(data: FormData, token:string): Promise<Produ
 
     }
 }
-export async function inviteColaborator(email: string, token:string): Promise<ProductResponse> {    
+export async function createColab(data: CreateColabData): Promise<CrateColabResponse> {
+    try {
+        const response = await fetch(`${API_BASE_URL}/create-colab`, {
+            method: 'POST',
+            headers:{
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data),
+        });
+        
+        if (!response.ok) {
+            const errorMessage = await response.json();
+            console.log(errorMessage);
+            
+            return { error: errorMessage.error };
+        }   
+
+        const result = await response.json()
+        
+        return {data: result, message:"Criado com suceso !"};
+    } catch (error) {
+        console.log(error);
+        
+        return { error: `Network error: ${(error as Error).message}` };
+
+    }
+}
+export async function inviteColaborator(email: string, token:string, barberShopId:string): Promise<ProductResponse> {   
+
     try {
         const response = await fetch(`${API_BASE_URL}/invite/colaborator`, {
             method: 'POST',
@@ -148,7 +189,7 @@ export async function inviteColaborator(email: string, token:string): Promise<Pr
                 'Content-Type': 'application/json'
 
             },
-            body: JSON.stringify({email}),
+            body: JSON.stringify({email, barberShopId: Number(barberShopId)}),
         });
         
         if (!response.ok) {
