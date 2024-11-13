@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useUserStore, useBarberShopStore } from '../../contexts';
-import { useEffect} from 'react';
+import { useEffect } from 'react';
 import { ToastContainer } from 'react-toastify';
 import { ArrowLeft } from '@phosphor-icons/react';
 import BarberShopTable from '../../components/BarberShopTable';
@@ -29,12 +29,14 @@ const BarberShopScreen = () => {
                     <AddColaboratorForm />
                 </div>
             }
-               <div className="w-full p-6 flex items-center justify-between">
-                    <button className='btn bg-zinc-500 flex gap-4' onClick={()=>navigate("/dashboard")}><ArrowLeft size={24} color='white' /> Voltar</button>
-                    <button onClick={()=>setShowCreateForm()} className="btn btn-primary">Nova unidade</button>
-                    <button onClick={()=>setShowAddColaboratorForm()} className="btn btn-secondary">Novo Colaborador</button>
+            <div className="w-full p-6 flex items-center justify-between">
+                <button className='btn bg-zinc-500 flex gap-4' onClick={() => navigate("/dashboard")}><ArrowLeft size={24} color='white' /> Voltar</button>
+                <div className='flex gap-4'>
+                    <button onClick={() => setShowCreateForm()} className="btn btn-primary">Nova Unidade</button>
+                    <button onClick={() => setShowAddColaboratorForm()} className="btn btn-secondary">Novo Colaborador</button>
                 </div>
-                <BarberShopTable />
+            </div>
+            <BarberShopTable />
         </>
     );
 

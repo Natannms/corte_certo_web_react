@@ -64,6 +64,22 @@ export type CreateColabData = {
     unit: string;
 }
 
+export type DefaultResponse = {
+    error?: string;
+    message?: string
+}
+interface BarberShopUpdateData {
+    name?: string;
+    address?: string;
+    startWorkTime?: string; // formato de data/hora ISO
+    endWorkTime?: string;   // formato de data/hora ISO
+}
+
+interface UpdateResponse {
+    success?: boolean;
+    error?: string;
+    data?: any;
+}
 export async function login(data: LoginData): Promise<AuthResponse> {
     try {
         const response = await fetch(`${API_BASE_URL}/auth/login`, {
@@ -101,6 +117,28 @@ export async function register(data: RegisterData): Promise<Response | ErrorResp
         }
 
         return response;
+    } catch (error) {
+        return { error: `Network error: ${(error as Error).message}` };
+
+    }
+}
+export async function deleteUser(id: number, token:string): Promise<DefaultResponse | ErrorResponse> {
+    try {
+        const response = await fetch(`${API_BASE_URL}/user/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+        
+        if (!response.ok) {
+            const errorMessage = await response.json();
+            console.log(errorMessage)
+            return { error: `Failed to delete: ${errorMessage}` };
+        }
+
+        return {message: "Deletado com sucesso !"};
     } catch (error) {
         return { error: `Network error: ${(error as Error).message}` };
 
@@ -248,7 +286,7 @@ export async function getBarberShops(token: string): Promise<BarberShopPaginated
         }
 
         const data = await response.json();   
-                     
+        
         return {data, total: 0, totalPages: 0};
     } catch (error) {
         return { error: `Network error: ${(error as Error).message}`, data: [], total: 0, totalPages: 0 };
@@ -348,4 +386,30 @@ export async function updateSchedule(token: string, scheduleId: number, data: Pa
     }
 }
 
+export async function updateBarberShop(
+    token: string, 
+    barberShopId: number, 
+    updateData: BarberShopUpdateData
+): Promise<UpdateResponse> {
+    try {
+        const response = await fetch(`${API_BASE_URL}/barbershop/${barberShopId}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(updateData),
+        });
+
+        if (!response.ok) {
+            const err = await response.json();
+            return { error: `Failed to update barber shop: ${err.message}` };
+        }
+
+        const data = await response.json();
+        return { success: true, data };
+    } catch (error) {
+        return { error: `Network error: ${(error as Error).message}` };
+    }
+}
 

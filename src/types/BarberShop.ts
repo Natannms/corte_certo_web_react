@@ -4,6 +4,8 @@ export type BarberShop = {
     userId: number
     role?: string
     name: string
+    startWork: string
+    endWork: string
     BarberShopUser: BarberShopUser[]
     address: string
     createdAt: Date
@@ -18,6 +20,7 @@ export type BarberShopUser = {
 }
 
 export type UserDataOnBarberShop = {
+    id:number
     name: string
     email: string
     profilePhotoPath: string | null
