@@ -14,6 +14,7 @@ import HaircutScreen from './Screens/Dashboard/HaircutScreen.tsx';
 import ProductScreen from './Screens/Dashboard/ProductScreen.tsx';
 import BarberShopScreen from './Screens/Dashboard/BarberShopScreen.tsx';
 import AcceptInviteColabScreen from './Screens/AcceptInviteColabScreen.tsx';
+import BarberShopConfigScreen from './Screens/Dashboard/BarberShopConfigScreen.tsx';
 
 
 const router = createBrowserRouter([
@@ -44,6 +45,10 @@ const router = createBrowserRouter([
   {
     path: "/products",
     element: <ProductScreen />,
+  },
+  {
+    path: "/barber-shop-config",
+    element: <BarberShopConfigScreen />,
   },
   {
     path: "/franchise",

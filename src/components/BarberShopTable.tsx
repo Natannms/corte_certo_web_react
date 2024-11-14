@@ -7,7 +7,7 @@ import { BarberShop, BarberShopUser } from '../../src/types/BarberShop';
 import loadingLottie from "../assets/lottie/loading.json";
 import Lottie from 'lottie-react';
 import { useNavigate } from 'react-router-dom';
-import BarberShopConfigForm from './BarberShopConfigForm';
+// import BarberShopConfigForm from './BarberShopConfigForm';
 
 const BarberShopTable = () => {
     const { barberShops, setBarberShops } = useBarberShopStore();
@@ -119,7 +119,10 @@ const BarberShopTable = () => {
                                         <TreeView size={24} /> <p className='hidden md:flex'>Colaboradores</p>
                                     </button>
                                     <label htmlFor="barberConfig"
-                                        onClick={() => SetSelectedBarberShop(barberShop.id)}
+                                        onClick={() => {
+                                            SetSelectedBarberShop(barberShop.id);
+                                            navigate("/barber-shop-config")
+                                        }}
                                         className='bg-blue-500 rounded p-1 flex gap-4 px-4 items-center justify-center text-white'>
                                         <Gear  size={24} /> <p className='hidden md:flex'>Configurações</p>
                                     </label>
@@ -184,7 +187,7 @@ const BarberShopTable = () => {
                 <div className="modal-content flex flex-col gap-5 w-full">
                     <label htmlFor="barberConfig" className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</label>
                     <h2 className="text-xl text-center">Condigurações</h2>
-                    <BarberShopConfigForm updateBarberShopsList={updateBarberShopsList} />
+                    {/* <BarberShopConfigForm updateBarberShopsList={updateBarberShopsList} /> */}
                 </div>
             </div>
         </div>
