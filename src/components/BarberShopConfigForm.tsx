@@ -53,13 +53,19 @@ const BarberShopConfigForm = ({updateBarberShopsList}:Props) => {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     
-                    placeholder={barberShops.filter((item: BarberShop) => item.id === selectedBarberShop)[0].name}
+                    placeholder={barberShops.filter((item: BarberShop) => item.id === selectedBarberShop)[0].name 
+                        ? barberShops.filter((item: BarberShop) => item.id === selectedBarberShop)[0].name
+                        : ''
+                     }
                 />
             </div>
             <div className="flex flex-col w-full  items-center">
                 <label htmlFor="address">Endereço:</label>
                 <input
-                    placeholder={barberShops.filter((item: BarberShop) => item.id === selectedBarberShop)[0].address}
+                    placeholder={barberShops.filter((item: BarberShop) => item.id === selectedBarberShop)[0].address 
+                        ? barberShops.filter((item: BarberShop) => item.id === selectedBarberShop)[0].address
+                        : ''
+                     }
                     className="input"
                     type="text"
                     id="address"
@@ -79,7 +85,12 @@ const BarberShopConfigForm = ({updateBarberShopsList}:Props) => {
                     onChange={(e) => setStartWork(e.target.value)}
                     
                 />
-                <small className="">{barberShops.filter((item: BarberShop) => item.id === selectedBarberShop)[0].startWork? barberShops.filter((item: BarberShop) => item.id === selectedBarberShop)[0].startWork: 'horário de inicio ainda não foi definido'}</small>
+                <small className="">{
+                        barberShops.filter((item: BarberShop) => item.id === selectedBarberShop)[0].startWork 
+                        ? barberShops.filter((item: BarberShop) => item.id === selectedBarberShop)[0].startWork
+                        :
+                         'horário de inicio ainda não foi definido'
+                         }</small>
             </div>
             <div className="flex flex-col w-full  items-center">
                 <label htmlFor="endWork">Horário de Encerramento:</label>
