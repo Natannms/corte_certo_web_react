@@ -8,7 +8,7 @@ import AddColaboratorForm from '../../components/AddColaboratorForm';
 
 const BarberShopScreen = () => {
     const { token } = useUserStore();
-    const { ShowAddColaboratorForm, setShowCreateForm, setShowAddColaboratorForm } = useBarberShopStore();
+    const { ShowAddColaboratorForm, setShowAddColaboratorForm } = useBarberShopStore();
     const navigate = useNavigate()
     async function loadPage() {
         if (!token) {
@@ -32,7 +32,6 @@ const BarberShopScreen = () => {
             <div className="w-full p-6 flex items-center justify-between">
                 <button className='btn bg-zinc-500 flex gap-4' onClick={() => navigate("/dashboard")}><ArrowLeft size={24} color='white' /> Voltar</button>
                 <div className='flex gap-4'>
-                    <button onClick={() => setShowCreateForm()} className="btn btn-primary">Nova Unidade</button>
                     <button onClick={() => setShowAddColaboratorForm()} className="btn btn-secondary">Novo Colaborador</button>
                 </div>
             </div>

@@ -3,32 +3,34 @@ import { useUserStore, useBarberShopStore } from '../../contexts';
 import { useEffect, useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import { BarberShop } from '../../../src/types/BarberShop';
-import { getBarberShops, updateBarberShop } from '../../../src/api/api';
+import { getBarberShops, updateBarberShop, createBarberShop } from '../../../src/api/api';
+import { ArrowLeft } from '@phosphor-icons/react';
 
 const BarberShopConfigScreen = () => {
     const { token } = useUserStore();
     const { selectedBarberShop, barberShops, setBarberShops } = useBarberShopStore();
-    const navigate = useNavigate()
+    const navigate = useNavigate();
 
     const [name, setName] = useState<string>('');
     const [address, setAddress] = useState<string>('');
     const [startWork, setStartWork] = useState<string>('');
     const [endWork, setEndWork] = useState<string>('');
+    const [isNewUnit, setIsNewUnit] = useState<boolean>(false); // Estado do switch
 
     async function loadPage() {
         if (!token) {
-            localStorage.clear()
-            navigate("/login")
+            localStorage.clear();
+            navigate("/login");
         }
 
         const list = barberShops.filter((item: BarberShop) => item.id === selectedBarberShop)[0];
-        setName(list.name)
-        setAddress(list.address !== null ? list.endWork : '')
-        setStartWork(list.startWork !== null ? list.endWork : '')
-        setEndWork(list.endWork)
+        setName(list.name);
+        setAddress(list.address !== null ? list.address : '');
+        setStartWork(list.startWork !== null ? list.startWork : '');
+        setEndWork(list.endWork);
     }
+
     async function updateBarberShopsList() {
-        // Carregar franquias
         const barberShopResult = await getBarberShops(token);
         if (barberShopResult.error) {
             toast(barberShopResult.error);
@@ -41,11 +43,10 @@ const BarberShopConfigScreen = () => {
         }
 
         if (barberShopResult.data) {
-            console.log(barberShopResult);
             setBarberShops(barberShopResult.data);
         }
-
     }
+
     async function handleSubmit(event: React.FormEvent) {
         event.preventDefault();
 
@@ -56,60 +57,61 @@ const BarberShopConfigScreen = () => {
             endWork,
         };
 
-        // Enviar os dados para o servidor
         try {
-            const response = await updateBarberShop(token, selectedBarberShop, barberShopData);
-            if (response.success) {
-                updateBarberShopsList()
-                toast("Atualizado com sucesso", { type: "success" })
+            if (isNewUnit) {
+                // Enviar para createBarberShopUser
+                const response = await createBarberShop(token, barberShopData);
+                if (response.success) {
+                    updateBarberShopsList();
+                    toast("Nova unidade criada com sucesso", { type: "success" });
+                }
+            } else {
+                // Enviar para updateBarberShop
+                const response = await updateBarberShop(token, selectedBarberShop, barberShopData);
+                if (response.success) {
+                    updateBarberShopsList();
+                    toast("Atualizado com sucesso", { type: "success" });
+                }
             }
-            toast(response.success, { type: "success" });
         } catch (error) {
-            toast('Erro ao atualizar informações da barbearia: ' + error, { type: 'error' });
-            console.error('Erro ao atualizar informações da barbearia:', error);
+            toast('Erro ao salvar as informações da barbearia: ' + error, { type: 'error' });
+            console.error('Erro ao salvar as informações da barbearia:', error);
         }
     }
 
     useEffect(() => {
-        loadPage()
-    }, [])
+        loadPage();
+    }, []);
 
     return (
         <>
             <ToastContainer />
+            <div className="w-full p-6 flex items-center justify-between">
+                <button className='btn bg-zinc-500 flex gap-4' onClick={() => navigate("/franchise")}><ArrowLeft size={24} color='white' /> Voltar</button>
+               
+            </div>
             <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-8 rounded items-center w-full">
-                <div className="flex flex-col w-full  items-center">
-                    <label htmlFor="name">Nome da Barbearia : </label>
+                <div className="flex flex-col w-full items-center">
+                    <label htmlFor="name">Nome da Barbearia:</label>
                     <input
                         className="input"
                         type="text"
                         id="name"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-
-                    // placeholder={barberShops.filter((item: BarberShop) => item.id === selectedBarberShop)[0].name
-                    //     ? barberShops.filter((item: BarberShop) => item.id === selectedBarberShop)[0].name
-                    //     : ''
-                    // }
                     />
                 </div>
-                <div className="flex flex-col w-full  items-center">
+                <div className="flex flex-col w-full items-center">
                     <label htmlFor="address">Endereço:</label>
                     <input
-                        // placeholder={barberShops.filter((item: BarberShop) => item.id === selectedBarberShop)[0].address
-                        //     ? barberShops.filter((item: BarberShop) => item.id === selectedBarberShop)[0].address
-                        //     : ''
-                        // }
                         className="input"
                         type="text"
                         id="address"
                         value={address}
                         onChange={(e) => setAddress(e.target.value)}
-
                     />
-                    <small></small>
                 </div>
-                <div className="flex flex-col w-full  items-center">
+                <div className="flex flex-col w-full items-center">
                     <label htmlFor="startWork">Horário de Início:</label>
                     <input
                         className="input"
@@ -117,16 +119,9 @@ const BarberShopConfigScreen = () => {
                         id="startWork"
                         value={startWork}
                         onChange={(e) => setStartWork(e.target.value)}
-
                     />
-                    <small className="">{
-                        // barberShops.filter((item: BarberShop) => item.id === selectedBarberShop)[0].startWork
-                        //     ? barberShops.filter((item: BarberShop) => item.id === selectedBarberShop)[0].startWork
-                        //     :
-                        //     'horário de inicio ainda não foi definido'
-                    }</small>
                 </div>
-                <div className="flex flex-col w-full  items-center">
+                <div className="flex flex-col w-full items-center">
                     <label htmlFor="endWork">Horário de Encerramento:</label>
                     <input
                         className="input"
@@ -134,17 +129,23 @@ const BarberShopConfigScreen = () => {
                         id="endWork"
                         value={endWork}
                         onChange={(e) => setEndWork(e.target.value)}
-
                     />
-                    {/* <small className="">{barberShops.filter((item: BarberShop) => item.id === selectedBarberShop)[0].startWork ? barberShops.filter((item: BarberShop) => item.id === selectedBarberShop)[0].startWork : 'horário de encerramento ainda não foi definido'}</small> */}
-
+                </div>
+                <div className="flex gap-6 items-center w-80">
+                    <input
+                        type="checkbox"
+                        className="switch switch-success"
+                        checked={isNewUnit}
+                        onChange={(e) => setIsNewUnit(e.target.checked)} // Atualiza o estado ao mudar
+                    />
+                    Configurar nova unidade
                 </div>
                 <div>
-                    <button type="submit" className="btn btn-primary w-full">Salvar Configurações</button>
+                    <button type="submit" className="btn btn-primary w-80">Salvar Configurações</button>
                 </div>
             </form>
         </>
     );
+};
 
-}
-export default BarberShopConfigScreen; 
+export default BarberShopConfigScreen;

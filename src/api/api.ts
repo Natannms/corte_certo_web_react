@@ -4,8 +4,8 @@ import { BarberShopPaginated, HairCutPaginated, ProductPaginated, RatesPaginated
 import { Product } from "src/types/Product";
 import { Schedule } from "src/types/Schedule";
 
-// const API_BASE_URL =  import.meta.env.VITE_API_BASE_URL; 
-const API_BASE_URL =  "https://cortecertots-536925599617.us-east4.run.app"; 
+const API_BASE_URL =  import.meta.env.VITE_API_BASE_URL; 
+// const API_BASE_URL =  "https://cortecertots-536925599617.us-east4.run.app"; 
 
 interface LoginData {
     email: string;
@@ -81,6 +81,10 @@ interface UpdateResponse {
     error?: string;
     data?: any;
 }
+
+type CreateBarberShopResponse =  UpdateResponse
+type CreateBarberShopData = BarberShopUpdateData
+
 export async function login(data: LoginData): Promise<AuthResponse> {
     try {
         const response = await fetch(`${API_BASE_URL}/auth/login`, {
@@ -405,6 +409,31 @@ export async function updateBarberShop(
         if (!response.ok) {
             const err = await response.json();
             return { error: `Failed to update barber shop: ${err.message}` };
+        }
+
+        const data = await response.json();
+        return { success: true, data };
+    } catch (error) {
+        return { error: `Network error: ${(error as Error).message}` };
+    }
+}
+export async function createBarberShop(
+    token: string, 
+    createUserData: CreateBarberShopData
+): Promise<CreateBarberShopResponse> {
+    try {
+        const response = await fetch(`${API_BASE_URL}/barbershop`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(createUserData),
+        });
+
+        if (!response.ok) {
+            const err = await response.json();
+            return { error: `Failed to create barber shop: ${err.message}` };
         }
 
         const data = await response.json();
