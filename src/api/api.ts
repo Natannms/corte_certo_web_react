@@ -1,11 +1,11 @@
 // import { HairCut } from "src/types/Haircut";
 import { HairCut } from "src/types/Haircut";
-import { BarberShopPaginated, HairCutPaginated, ProductPaginated, RatesPaginated, SchedulesPaginated } from "src/types/Paginated";
+import { AvailableTimesPaginated, BarberShopPaginated, HairCutPaginated, ProductPaginated, RatesPaginated, SchedulesPaginated } from "src/types/Paginated";
 import { Product } from "src/types/Product";
 import { Schedule } from "src/types/Schedule";
 
-// const API_BASE_URL =  import.meta.env.VITE_API_BASE_URL; 
-const API_BASE_URL =  "https://cortecertots-536925599617.us-east4.run.app"; 
+const API_BASE_URL =  import.meta.env.VITE_API_BASE_URL; 
+// const API_BASE_URL =  "https://cortecertots-536925599617.us-east4.run.app"; 
 
 interface LoginData {
     email: string;
@@ -35,6 +35,8 @@ export type AuthResponse = {
         email: string;
         type: string;
         id: number;
+        isExpired: boolean;
+        expiredTrialAccount: boolean;
         profilePhotoPath: string;
         createdAt: string;
         updatedAt: string;
@@ -45,6 +47,11 @@ export type HairCutResponse = {
     error?: string;
     message?: string;
     data?: HairCut
+}
+export type ScheduleResponse = {
+    error?: string;
+    message?: string;
+    data?: Schedule
 }
 export type ProductResponse = {
     error?: string;
@@ -127,6 +134,28 @@ export async function register(data: RegisterData): Promise<Response | ErrorResp
 
     }
 }
+export async function createSubscription(billingType: "BOLETO" | "CREDIT_CARD" | "PIX", token:string): Promise<Response | ErrorResponse> {
+    try {
+        const response = await fetch(`${API_BASE_URL}/create-subscription`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({billingType}),
+        });
+        
+        if (!response.ok) {
+            const errorMessage = await response.json();
+            return { error: `Failed to create subscription: ${errorMessage}` };
+        }
+
+        return response;
+    } catch (error) {
+        return { error: `Network error: ${(error as Error).message}` };
+
+    }
+}
 export async function deleteUser(id: number, token:string): Promise<DefaultResponse | ErrorResponse> {
     try {
         const response = await fetch(`${API_BASE_URL}/user/${id}`, {
@@ -144,6 +173,30 @@ export async function deleteUser(id: number, token:string): Promise<DefaultRespo
         }
 
         return {message: "Deletado com sucesso !"};
+    } catch (error) {
+        return { error: `Network error: ${(error as Error).message}` };
+
+    }
+}
+export async function createSchedule(data: any, token:string): Promise<ScheduleResponse> {
+    try {
+        const response = await fetch(`${API_BASE_URL}/schedules`, {
+            method: 'POST',
+            headers:{
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify(data),
+        });
+        
+        if (!response.ok) {
+            const errorMessage = await response.json();
+            return { error: `Failed to register: ${errorMessage}` };
+        }   
+
+        const result = await response.json()
+        
+        return {data: result, message:"Criado com suceso !"};
     } catch (error) {
         return { error: `Network error: ${(error as Error).message}` };
 
@@ -272,6 +325,29 @@ export async function getHaircuts(token: string): Promise<HairCutPaginated> {
         return { error: `Network error: ${(error as Error).message}`, data: [], total: 0, totalPages: 0 };
     }
 }
+export async function getAvailableDates(token: string): Promise<AvailableTimesPaginated> {
+    try {
+        
+        const response = await fetch(`${API_BASE_URL}/available-dates?barberShopId=1`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.error);            
+        }
+
+        const data = await response.json();    
+                    
+        return data;
+    } catch (error) {
+        return { error: `Network error: ${(error as Error).message}`, data: [{ unscheduledBarbersList:[], availableTimes: []}], total: 0, totalPages: 0 };
+    }
+}
 
 export async function getBarberShops(token: string): Promise<BarberShopPaginated> {
     try {
@@ -368,6 +444,9 @@ export async function getRates(token: string): Promise<RatesPaginated> {
 }
 
 export async function updateSchedule(token: string, scheduleId: number, data: Partial<Schedule>): Promise<{ success: boolean; error?: string } | ErrorResponse> {
+    
+    data.id = scheduleId
+    console.log(data);
     
     try {
         const response = await fetch(`${API_BASE_URL}/schedules/${scheduleId}`, {

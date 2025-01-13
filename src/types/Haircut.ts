@@ -5,6 +5,7 @@ export type HairCut = {
     description: string;
     price: number;
     imageUrl:string;
+    imageName:string;
     createdAt: string;
     updatedAt: string;
 };

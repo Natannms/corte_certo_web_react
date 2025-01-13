@@ -42,7 +42,6 @@ const BarberShopTable = () => {
          }
 
          if(barberShopResult.data){
-            console.log(barberShopResult);
             setBarberShops(barberShopResult.data);
         }
 

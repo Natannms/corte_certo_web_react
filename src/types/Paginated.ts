@@ -18,6 +18,15 @@ export type HairCutPaginated = {
     error?: string
     expiredToken?: any
 }
+
+export type UnscheduledBarbers = {id:number, name:string, profilePhotoPath:string | null}
+export type AvailableTimesPaginated = {
+    data: {unscheduledBarbersList?: [UnscheduledBarbers], availableTimes:string[]}, 
+    total: number, 
+    totalPages: number
+    error?: string
+    expiredToken?: any
+}
 export type BarberShopPaginated = {
     data: BarberShop[], 
     total: number, 
