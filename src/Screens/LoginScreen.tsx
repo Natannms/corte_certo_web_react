@@ -9,7 +9,7 @@ import { AuthResponse, login } from '../../src/api/api';
 
 const LoginScreen = () => {
     const navigate: NavigateFunction = useNavigate();
-    const { setName, setToken } = useUserStore();
+    const { setName, setToken, setExpiredSubscriptionAccount, setExpiredTrialAccount } = useUserStore();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -27,9 +27,12 @@ const LoginScreen = () => {
         } else {
             const { user, token } = response;
             if (token && user) {
+                console.log("login screen", user.expiredTrialAccount);
                 setName(user.name)
                 setToken(token)
                 setIsLoading(false)
+                setExpiredSubscriptionAccount(user.isExpired)
+                setExpiredTrialAccount(user.expiredTrialAccount)
                 navigate('/dashboard', { replace: true, state: { user } })
                 return;
             }

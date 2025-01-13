@@ -15,6 +15,7 @@ import ProductScreen from './Screens/Dashboard/ProductScreen.tsx';
 import BarberShopScreen from './Screens/Dashboard/BarberShopScreen.tsx';
 import AcceptInviteColabScreen from './Screens/AcceptInviteColabScreen.tsx';
 import BarberShopConfigScreen from './Screens/Dashboard/BarberShopConfigScreen.tsx';
+import CTPaymentScreen from './Screens/CTPaymentScreen.tsx';
 
 
 const router = createBrowserRouter([
@@ -29,6 +30,10 @@ const router = createBrowserRouter([
   {
     path: "/register",
     element: <RegisterScreen />,
+  },
+  {
+    path: "/upgrade-account",
+    element: <CTPaymentScreen />,
   },
   {
     path: "/login",

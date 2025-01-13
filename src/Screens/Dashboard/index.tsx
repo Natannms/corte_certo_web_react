@@ -1,11 +1,16 @@
 import { useState, useEffect } from 'react';
 import { getBarberShops, getHaircuts, getProducts, getRates, getSchedules, updateSchedule } from '../../api/api'; // Importando a nova função
 import { NavigateFunction, useNavigate } from 'react-router-dom';
-import { Scissors, Calendar, ArrowCircleRight, ArrowCircleLeft, CheckCircle, OfficeChair, ReceiptX, FlagCheckered, HourglassHigh, FileX, Sparkle, ThumbsDown, StackPlus, Play, List, Package, Warehouse } from '@phosphor-icons/react'; // Adicionando ícone para schedules
+import { Scissors, Sparkle, ThumbsDown, StackPlus, List, Package, Warehouse } from '@phosphor-icons/react'; // Adicionando ícone para schedules
 import { Rate } from 'src/types/Rate';
 import { useUserStore, useHairCutStore, useScheduleStore, useRateStore, useProductStore, useBarberShopStore } from '../../contexts/';
-import { toast, ToastContainer} from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import NewScheduleForm from '../../components/NewScheduleForm';
+import ScheduleSliderMobile from '../../components/ScheduleSliderMobile';
+import ServicesAccordion from '../../components/ServicesAccordion';
+import ScheduleListAccordion from '../../components/ScheduleListAccordion';
+import { DockIcon } from 'lucide-react';
 
 const Dashboard = () => {
     const navigate: NavigateFunction = useNavigate();
@@ -16,14 +21,15 @@ const Dashboard = () => {
     const [highestRate, setHighestRate] = useState<Rate | null>(null)
     const [lowestRate, setLowestRate] = useState<Rate | null>(null)
     const [averateRate, setAverageRate] = useState<number>(0)
-    const {token} = useUserStore()
-    const {setHaircuts, haircuts} = useHairCutStore()
-    const {setProducts} = useProductStore()
-    const {setSchedules, schedules} = useScheduleStore()
-    const {setBarberShops} = useBarberShopStore()
-    const {setRates} = useRateStore()
-    const {name} = useUserStore()
-    //paginate Schedule
+    const { token, expiredTrialAccount } = useUserStore()
+    const { setHaircuts, haircuts } = useHairCutStore()
+    const { setProducts } = useProductStore()
+    const { setSchedules, schedules } = useScheduleStore()
+    const { setBarberShops } = useBarberShopStore()
+    const { setRates } = useRateStore()
+    const { name } = useUserStore()
+    //paginate Schedule 
+
     const [rangePage, setRangePage] = useState([0, 4])
     function nextSchedule() {
         if (rangePage[1] < schedules.length) {
@@ -40,91 +46,98 @@ const Dashboard = () => {
             setIsLoading(!isLoading);
         }, 3000);
     }
+    async function preLoading() {
+        // Carregar franquias
+        const barberShopResult = await getBarberShops(token);
 
+        if (barberShopResult.error) {
+            toast(barberShopResult.error);
+
+            if (barberShopResult.expiredToken) {
+                localStorage.clear();
+                navigate('/login', { replace: true });
+            }
+            loading();
+            return;
+        }
+
+        if (barberShopResult.data) {
+            setBarberShops(barberShopResult.data);
+        }
+
+        // Carregar Haircuts
+        const haircutResult = await getHaircuts(token);
+        if (haircutResult.error) {
+            toast(haircutResult.error);
+
+            if (haircutResult.expiredToken) {
+                localStorage.clear();
+                navigate('/login', { replace: true });
+            }
+            loading();
+            return;
+        }
+
+        if (haircutResult.data) {
+            setHaircuts(haircutResult.data);
+        }
+        // Carregar produtos
+        const productsResult = await getProducts(token);
+        if (productsResult.error) {
+            toast(haircutResult.error);
+
+            if (haircutResult.expiredToken) {
+                localStorage.clear();
+                navigate('/login', { replace: true });
+            }
+            loading();
+            return;
+        }
+
+        if (productsResult.data) {
+            setProducts(productsResult.data);
+        }
+
+        // Carregar Schedules
+        const scheduleResult = await getSchedules(token);
+        if (scheduleResult.error) {
+            setError(scheduleResult.error);
+
+            if (scheduleResult.expiredToken) {
+                localStorage.clear();
+                navigate('/login', { replace: true });
+            }
+            loading();
+            return;
+        }
+        setSchedules(scheduleResult.data);
+
+        // Carregar Rates
+        const ratesResult = await getRates(token);
+        if (ratesResult.error) {
+            setError(ratesResult.error);
+
+            if (ratesResult.expiredToken) {
+                localStorage.clear();
+                navigate('/login', { replace: true });
+            }
+            loading();
+            return;
+        }
+
+        setRates(ratesResult.data);
+        setHighestRate(getHighestRate(ratesResult.data))
+        setLowestRate(getLowestRate(ratesResult.data))
+        setAverageRate(calculateAverageRate(ratesResult.data))
+    }
     async function loadingData() {
         loading();
         if (token !== "" || token) {
-            // Carregar franquias
-            const barberShopResult = await getBarberShops(token);
-            if (barberShopResult.error) {
-                toast(barberShopResult.error);
-
-                if (barberShopResult.expiredToken) {
-                    localStorage.clear();
-                    navigate('/login', { replace: true });
-                }
-                loading();
-                return;
+            if (expiredTrialAccount) {
+                navigate('/upgrade-account')
+            } else {
+                preLoading()
             }
-
-            if(barberShopResult.data){
-                setBarberShops(barberShopResult.data);
-            }
-
-            // Carregar Haircuts
-            const haircutResult = await getHaircuts(token);
-            if (haircutResult.error) {
-                toast(haircutResult.error);
-
-                if (haircutResult.expiredToken) {
-                    localStorage.clear();
-                    navigate('/login', { replace: true });
-                }
-                loading();
-                return;
-            }
-
-            if(haircutResult.data){
-                setHaircuts(haircutResult.data);
-            }
-            // Carregar produtos
-            const productsResult = await getProducts(token);
-            if (productsResult.error) {
-                toast(haircutResult.error);
-
-                if (haircutResult.expiredToken) {
-                    localStorage.clear();
-                    navigate('/login', { replace: true });
-                }
-                loading();
-                return;
-            }
-
-            if(productsResult.data){
-                setProducts(productsResult.data);
-            }
-
-            // Carregar Schedules
-            const scheduleResult = await getSchedules(token);
-            if (scheduleResult.error) {
-                setError(scheduleResult.error);
-
-                if (scheduleResult.expiredToken) {
-                    localStorage.clear();
-                    navigate('/login', { replace: true });
-                }
-                loading();
-                return;
-            }
-            setSchedules(scheduleResult.data);
-
-            // Carregar Rates
-            const ratesResult = await getRates(token);
-            if (ratesResult.error) {
-                setError(ratesResult.error);
-
-                if (ratesResult.expiredToken) {
-                    localStorage.clear();
-                    navigate('/login', { replace: true });
-                }
-                loading();
-                return;
-            }
-
-            setRates(ratesResult.data);
-            setHighestRate(getHighestRate(ratesResult.data))
-            setLowestRate(getLowestRate(ratesResult.data))
-            setAverageRate(calculateAverageRate(ratesResult.data))
 
             loading();
         } else {
@@ -157,43 +170,43 @@ const Dashboard = () => {
 
         return data.reduce((lowest, current) => (current.rate < lowest.rate ? current : lowest));
     }
-    const formatCurrency = (value: number) => {
-        return new Intl.NumberFormat('pt-BR', {
-            style: 'currency',
-            currency: 'BRL'
-        }).format(value);
-    }
+    // const formatCurrency = (value: number) => {
+    //     return new Intl.NumberFormat('pt-BR', {
+    //         style: 'currency',
+    //         currency: 'BRL'
+    //     }).format(value);
+    // }
 
-    const getScheduleStatus = (status: string) => {
-        switch (status) {
-            case 'confirmed':
-                return <CheckCircle size={32} className='text-white' />
-                break;
-            case 'in-progress':
-                return <OfficeChair size={32} className='text-green-500' />
-                break;
-            case 'canceled':
-                return <ReceiptX size={32} className='text-red-500' />
-                break;
-            case 'finished':
-                return <FlagCheckered size={32} className='text-lime-500' />
-                break;
-            case 'pending':
-                return <HourglassHigh size={32} className='text-yellow-500' />
-                break;
-            default:
-                return <FileX size={32} className='text-white' />
-                break;
-        }
-    }
+    // const getScheduleStatus = (status: string) => {
+    //     switch (status) {
+    //         case 'confirmed':
+    //             return <CheckCircle size={32} className='text-white' />
+    //             break;
+    //         case 'in-progress':
+    //             return <OfficeChair size={32} className='text-green-500' />
+    //             break;
+    //         case 'canceled':
+    //             return <ReceiptX size={32} className='text-red-500' />
+    //             break;
+    //         case 'finished':
+    //             return <FlagCheckered size={32} className='text-amber-500' />
+    //             break;
+    //         case 'pending':
+    //             return <HourglassHigh size={32} className='text-yellow-500' />
+    //             break;
+    //         default:
+    //             return <FileX size={32} className='text-white' />
+    //             break;
+    //     }
+    // }
 
     async function updateScheduleStatus(id: number, status: string) {
-        const token = localStorage.getItem('token');
         if (!token) {
             localStorage.clear();
             navigate('/login', { replace: true });
             return;
         }
+
         await updateSchedule(token, id, { status })
         await loadingData();
     }
@@ -232,16 +245,16 @@ const Dashboard = () => {
                                         <span>General</span>
                                     </li>
 
-                                    <li className="menu-item" onClick={()=>navigate("/products")}>
-                                        <Package  size={24} />
+                                    <li className="menu-item" onClick={() => navigate("/products")}>
+                                        <Package size={24} />
                                         <span>Produtos</span>
                                     </li>
-                                    <li className="menu-item" onClick={()=>navigate("/services")}>
-                                        <Scissors   size={24} />
+                                    <li className="menu-item" onClick={() => navigate("/services")}>
+                                        <Scissors size={24} />
                                         <span>Cortes e Serviços</span>
                                     </li>
-                                    <li className="menu-item" onClick={()=>navigate("/franchise")}>
-                                        <Warehouse    size={24} />
+                                    <li className="menu-item" onClick={() => navigate("/franchise")}>
+                                        <Warehouse size={24} />
                                         <span>Franquias</span>
                                     </li>
                                     <li className="menu-item">
@@ -383,132 +396,87 @@ const Dashboard = () => {
                     </section>
                 </aside>
             </div>
+
             <div className="flex w-full flex-col p-4">
                 <div className="w-full flex items-start justify-start">
                     <label htmlFor="sidebar-mobile-fixed" className="sm:hidden">
-                        <List size={32} className='text-lime-500'/>
+                        <List size={32} className='text-amber-500' />
                     </label>
                 </div>
-                <div className="flex flex-col gap-4 items-start w-full mb-4">
-                {error &&<div className="bg-red-500"> {error} </div>}
-                    <div className='w-full bg-stone-800 p-4 rounded flex flex-col md:flex-row gap-4 items-center justify-items-center'>
-                        <div className='md:w-5/12 w-full  p-4 rounded flex flex-col gap-4'>
-                            <h1 className='text-2xl font-bold'>Barber Ratings</h1>
-                            <div className='flex gap-8 items-center '>
-                                <div id="rating" className='w-36 h-36 bg-lime-600 flex items-center justify-center rounded-full p-2'>
-                                    <div className='border-4 border-black rounded-full p-2 w-32 h-32 flex items-center justify-center'>
-                                        <h2 className='text-3xl font-extrabold text-black'>{averateRate}</h2>
-                                    </div>
-                                </div>
-                                <ul id="comments" className='flex flex-col gap-8 w-full'>
-                                    <li className='flex gap-4 items-center'>
-                                        <Sparkle size={32} className='text-white bg-lime-500 p-1 rounded-lg w-10' />
-                                        <div className='flex flex-col w-full'>
-                                            {highestRate &&  <p className=''> <span>nota</span>: {highestRate.rate}</p>}
-                                            <small> {highestRate?.comment}</small>
-                                        </div>
-                                    </li>
-                                    <li className='flex gap-4 items-center'>
-                                        <ThumbsDown size={32} className='text-lime-500 bg-stone-950 p-1 rounded-lg w-10' />
-                                       
-                                        <div className='flex flex-col w-full'>
-                                            {lowestRate &&  <p className=''> <span>nota</span>: {lowestRate.rate}</p>}
-                                            <small>{lowestRate?.comment}</small>
-                                        </div>
-                                    </li>
-                                </ul>
-                            </div>
+                <div className='w-full bg-stone-800 p-4 rounded flex flex-col gap-4 '>
+                    <div className='flex gap-4'>
+                        <div className='bg-stone-800'>
+                            <label className="btn bg-amber-700 flex gap-4 md:w-48 w-full justify-center" htmlFor="modal-2">
+                                <span className='md:block text-sm'>Agendamento</span> <StackPlus size={16} color='white' />
+                            </label>
+
                         </div>
+                        <div className='bg-stone-800'>
+                            <label className="btn bg-amber-700 flex gap-4 md:w-48 w-full justify-center" onClick={()=>{alert("Ainda não é possivel ver relatorios")}}>
+                                <span className='md:block text-sm'>Relatórios</span> <DockIcon size={16} color='white' />
+                            </label>
+
+                        </div>
+                    </div>
+
+                </div>
+
+
+                <div className="flex flex-col gap-4 items-start w-full mb-4">
+                    {error && <div className="bg-red-500"> {error} </div>}
+                    <div className='w-full bg-stone-800 p-4 rounded flex flex-col md:flex-row gap-4 items-center justify-items-center'>
+                        {schedules.filter((schedule) => schedule.status === 'confirmed').length <= 0 &&
+                            <div className='md:w-5/12 w-full  p-4 rounded flex flex-col gap-4'>
+                                <h1 className='text-2xl font-bold text-center md:text-left'>Avaliações</h1>
+                                <div className='flex gap-8 items-center pt-10'>
+                                    <div id="rating" className='w-36 h-36 bg-amber-600 flex items-center justify-center rounded-full p-2'>
+                                        <div className='border-4 border-black rounded-full p-2 w-32 h-32 flex items-center justify-center'>
+                                            <h2 className='text-3xl font-extrabold text-black'>{averateRate}</h2>
+                                        </div>
+                                    </div>
+                                    <ul id="comments" className='flex flex-col gap-8 w-full'>
+                                        <li className='flex gap-4 items-center'>
+                                            <Sparkle size={32} className='text-white bg-amber-500 p-1 rounded-lg w-36' />
+                                            <div className='flex flex-col w-full'>
+                                                {highestRate && <p className=''> <span>nota</span>: {highestRate.rate}</p>}
+                                                <small> {highestRate?.comment}</small>
+                                            </div>
+                                        </li>
+                                        <li className='flex gap-4 items-center'>
+                                            <ThumbsDown size={32} className='text-amber-500 bg-stone-950 p-1 rounded-lg w-36' />
+
+                                            <div className='flex flex-col w-full'>
+                                                {lowestRate && <p className=''> <span>nota</span>: {lowestRate.rate}</p>}
+                                                <small>{lowestRate?.comment}</small>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        }
                         <div className=' w-full'>
                             <ul className='w-full bg-stone-800 p-4 rounded flex flex-col gap-4 '>
-                                {schedules.length > 0 &&
-                                    schedules
-                                        .map((schedule) => {
-                                            if (schedule.status === 'confirmed') {
-                                                return (
-                                                    <li key={schedule.id} className='flex justify-around items-center w-full  accordion-group-bordered'>
+                                {schedules.filter((schedule) => schedule.status === 'confirmed').length <= 0 ?
+                                    (<div className='bg-stone-600 w-full p-2 text-center rounded-lg'>Nenhum agendamento confirmado !</div>)
+                                    :
+                                    <ScheduleSliderMobile updateScheduleStatus={updateScheduleStatus} />
 
-                                                        <div id="name" className={`px-2 py-1 rounded-lg flex items-center justify-between gap-4`}>
-                                                            {getScheduleStatus(schedule.status)} {schedule.status}
-                                                        </div>
-                                                        <div id="date">
-                                                            {/* {new Date(schedule.date).toLocaleDateString('pt-BR')} -  */}
-                                                            {schedule.time}
-                                                        </div>
-                                                        <div onClick={() => updateScheduleStatus(schedule.id, 'in-progress')} id="icon" className='bg-stone-950 hover:bg-white rounded-lg p-1 hover:text-black flex gap-3 px-2 items-center justify-around'>
-                                                            INICIAR <Play className='text-blue-500' size={18} />
-                                                        </div>
-                                                    </li>
-                                                );
-                                            }
-                                        })
                                 }
-
-                                {schedules.filter((schedule) => schedule.status === 'confirmed').length <= 0 &&
-                                    <div className='bg-stone-600 w-full p-2 text-center rounded-lg'>Nenhum agendamento confirmado !</div>
-                                }
-                                {/* <li className='flex justify-center items-center w-full gap-20 py-4'>
-                                    <button onClick={() => previusScheduleConfirmed()} className='bg-stone-950 p-1 rounded-full w-8 h-8 flex justify-center items-center'>
-                                        <ArrowCircleLeft size={42} />
-                                    </button>
-                                    <button onClick={() => nextScheduleConfirmed()} className='bg-stone-950 p-1 rounded-full w-8 h-8 flex justify-center items-center'>
-                                        <ArrowCircleRight size={32} />
-                                    </button>
-                                </li> */}
                             </ul>
                         </div>
                     </div>
-                    <div className='w-full bg-stone-800 p-4 rounded flex flex-col gap-4 '>
-                        <div className=''>
-                            <label className="btn bg-lime-700 flex gap-4 md:w-48 w-24 justify-center items-center " htmlFor="modal-2">
-                                <span className='md:block hidden'>Agendamento</span> <StackPlus size={26} color='white' />
-                            </label>
-                            <input className="modal-state" id="modal-2" type="checkbox" />
-                            <div className="modal w-screen">
-                                <label className="modal-overlay" htmlFor="modal-2"></label>
-                                <div className="modal-content flex flex-col gap-5 max-w-3xl">
-                                    <label htmlFor="modal-2" className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</label>
-                                    <h2 className="text-xl">Novo agendamento</h2>
-                                    <span>A opção de cadatro de agendamneto esta em manutenção aguarde novas atualizações</span>
-                                    <div className="flex gap-3">
-                                        <button className="btn btn-error btn-block">Delete</button>
-                                        <button className="btn btn-block">Cancel</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div className="flex md:flex-row flex-col gap-4 items-start justify-between w-full">
-                    <div className="flex w-full items-center justify-end bg-gray-1">
-                        {/* Listagem de Haircuts */}
-                        <div className='accordion-group accordion-group-bordered w-full'>
-                            <div className="accordion">
-                                <input type="checkbox" id="toggle-15" className="accordion-toggle" />
-                                <label htmlFor="toggle-15" className="accordion-title">Detalhes rapidos de serviços</label>
-                                <span className="accordion-icon">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M13.293 6.293 7.586 12l5.707 5.707 1.414-1.414L10.414 12l4.293-4.293z"></path></svg>
-                                </span>
-                                <div className="accordion-content text-content2">
-                                    <div className="min-h-0">
-                                        <ul className='w-full bg-stone-800 p-4 rounded flex flex-col gap-4'>
-                                            {haircuts.length > 0 && haircuts.map((haircut) => (
-                                                <li key={haircut.id} className='flex justify-between items-center'>
-                                                    <div id="icon" className='bg-stone-950 rounded-lg p-2'>
-                                                        <Scissors className='text-yellow-500' size={16} />
-                                                    </div>
-                                                    <div id="name">{haircut.description}</div>
-                                                    <div id="price"> {formatCurrency(haircut.price)}</div>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
-                    <div className="flex w-full items-center justify-center  bg-gray-1">
+                </div>
+
+                <div className="flex md:flex-row flex-col gap-4 items-start justify-between w-full">
+                    <ServicesAccordion haircuts={haircuts} />
+                    <ScheduleListAccordion
+                        nextSchedule={nextSchedule}
+                        previusSchedule={previusSchedule}
+                        rangePage={[rangePage[0], rangePage[1]]}
+                        schedules={schedules}
+                    />
+                    {/* <div className="flex w-full items-center justify-center  bg-gray-1">
                         <div className='accordion-group accordion-group-bordered w-full'>
                             <div className="accordion">
                                 <input type="checkbox" id="toggle-16" className="accordion-toggle" />
@@ -521,7 +489,7 @@ const Dashboard = () => {
                                         <ul className='w-full bg-stone-800 p-4 rounded flex flex-col gap-4 '>
                                             {schedules.length > 0 &&
                                                 schedules
-                                                    .slice(rangePage[0], rangePage[1]) // Pega os primeiros 4 itens
+                                                    .slice(rangePage[0], rangePage[1])
                                                     .map((schedule) => (
                                                         <li key={schedule.id} className='flex justify-around items-center w-full accordion-group-bordered'>
 
@@ -529,10 +497,10 @@ const Dashboard = () => {
                                                                 {getScheduleStatus(schedule.status)}  {schedule.status}
                                                             </div>
                                                             <div id="date">
-                                                                {/* {new Date(schedule.date).toLocaleDateString('pt-BR')} -  */}
+                                                              
                                                                 {schedule.time}
                                                             </div>
-                                                            <div id="icon" className='bg-stone-950 hover:bg-lime-400 rounded-lg p-1'>
+                                                            <div id="icon" className='bg-stone-950 hover:bg-amber-400 rounded-lg p-1'>
                                                                 <Calendar className='text-blue-500 hover:text-white' size={24} />
                                                             </div>
                                                         </li>
@@ -551,7 +519,7 @@ const Dashboard = () => {
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div> */}
                     {/* <div className="flex h-40 w-full items-center justify-center border-2 border-dashed border-border bg-gray-1">+</div>
                     <div className="flex h-40 w-full items-center justify-center border-2 border-dashed border-border bg-gray-1">+</div>
                     <div className="flex h-40 w-full items-center justify-center border-2 border-dashed border-border bg-gray-1">+</div>
@@ -562,6 +530,18 @@ const Dashboard = () => {
                     <div className="flex h-40 w-full items-center justify-center border-2 border-dashed border-border bg-gray-1">+</div> */}
                 </div>
 
+            </div>
+            <input className="modal-state" id="modal-2" type="checkbox" />
+            <div className="modal w-full">
+                <label className="modal-overlay" htmlFor="modal-2"></label>
+                <div className="modal-content flex flex-col gap-5 w-full">
+                    <label htmlFor="modal-2" className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</label>
+                    <h2 className="text-xl">Novo agendamento</h2>
+                    <NewScheduleForm loadingData={loadingData} />
+                    <div className="flex gap-3">
+                        <button className="btn btn-block">Cancel</button>
+                    </div>
+                </div>
             </div>
         </div>
     );

@@ -32,8 +32,7 @@ const HairCutTable = () => {
                     {haircuts.map((haircut: HairCut) => {
                         return (
                             <tr key={haircut.id}>
-                                <th>{haircut.id}</th>
-                                <td><img src={haircut.imageUrl} className='rounded w-8 h-8' alt="" /></td>
+                                <td><img src={`http://localhost:8080/product-image/${haircut.imageName}`} className='rounded w-8 h-8' alt="" /></td>
                                 <td>{haircut.name}</td>
                                 <td>{haircut.description}</td>
                                 <td>{ToBRL(haircut.price)}</td>
