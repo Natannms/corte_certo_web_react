@@ -21,7 +21,7 @@ const Dashboard = () => {
     const [highestRate, setHighestRate] = useState<Rate | null>(null)
     const [lowestRate, setLowestRate] = useState<Rate | null>(null)
     const [averateRate, setAverageRate] = useState<number>(0)
-    const { token, expiredTrialAccount } = useUserStore()
+    const { token, expiredTrialAccount, expiredSubscriptionAccount } = useUserStore()
     const { setHaircuts, haircuts } = useHairCutStore()
     const { setProducts } = useProductStore()
     const { setSchedules, schedules } = useScheduleStore()
@@ -133,12 +133,17 @@ const Dashboard = () => {
     async function loadingData() {
         loading();
         if (token !== "" || token) {
-            if (expiredTrialAccount) {
-                navigate('/upgrade-account')
-            } else {
-                preLoading()
+            if (expiredSubscriptionAccount) {
+                navigate('account-screen')
+                return
             }
 
+            if (expiredTrialAccount) {
+              navigate('/upgrade-account')
+              return
+            }
+
+            preLoading()
             loading();
         } else {
             setError('Token não encontrado. Faça login novamente.');
@@ -412,7 +417,7 @@ const Dashboard = () => {
 
                         </div>
                         <div className='bg-stone-800'>
-                            <label className="btn bg-amber-700 flex gap-4 md:w-48 w-full justify-center" onClick={()=>{alert("Ainda não é possivel ver relatorios")}}>
+                            <label className="btn bg-amber-700 flex gap-4 md:w-48 w-full justify-center" onClick={() => { alert("Ainda não é possivel ver relatorios") }}>
                                 <span className='md:block text-sm'>Relatórios</span> <DockIcon size={16} color='white' />
                             </label>
 
