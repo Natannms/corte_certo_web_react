@@ -1,5 +1,4 @@
 // src/components/ScheduleDateFilter.tsx
-import React from 'react';
 import { Calendar } from 'lucide-react';
 import { DateFilterOption, getFilterLabel } from '../utils/dateFilters';
 

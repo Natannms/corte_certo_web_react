@@ -3,24 +3,24 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Schedule } from 'src/types/Schedule';
 import { useScheduleStore } from "../contexts/useScheduleStore";
 
-interface User {
-  id: number;
-  type: string;
-  name: string;
-  phone: string;
-  email: string;
-}
+// interface User {
+//   id: number;
+//   type: string;
+//   name: string;
+//   phone: string;
+//   email: string;
+// }
 
-interface Client {
-  id: number;
-  name: string;
-}
+// interface Client {
+//   id: number;
+//   name: string;
+// }
 
-interface Consumption {
-  id: number;
-  name: string;
-  price: number;
-}
+// interface Consumption {
+//   id: number;
+//   name: string;
+//   price: number;
+// }
 
 const ScheduleSlider: React.FC = () => {
     const {schedules } = useScheduleStore()

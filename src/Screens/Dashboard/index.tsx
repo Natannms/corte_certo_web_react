@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
 import { getBarberShops, getHaircuts, getProducts, getRates, getSchedules, updateSchedule } from '../../api/api'; // Importando a nova função
 import { NavigateFunction, useNavigate } from 'react-router-dom';
-import { Scissors, Calendar, ArrowCircleRight, ArrowCircleLeft, CheckCircle, OfficeChair, ReceiptX, FlagCheckered, HourglassHigh, FileX, Sparkle, ThumbsDown, StackPlus, Play, List, Package, Warehouse } from '@phosphor-icons/react'; // Adicionando ícone para schedules
+import { Scissors, Sparkle, ThumbsDown, StackPlus, List, Package, Warehouse } from '@phosphor-icons/react'; // Adicionando ícone para schedules
 import { Rate } from 'src/types/Rate';
 import { useUserStore, useHairCutStore, useScheduleStore, useRateStore, useProductStore, useBarberShopStore } from '../../contexts/';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import NewScheduleForm from '../../components/NewScheduleForm';
-import ScheduleSlider from '../../components/ScheduleSlider';
 import ScheduleSliderMobile from '../../components/ScheduleSliderMobile';
 import ServicesAccordion from '../../components/ServicesAccordion';
 import ScheduleListAccordion from '../../components/ScheduleListAccordion';
@@ -171,35 +170,35 @@ const Dashboard = () => {
 
         return data.reduce((lowest, current) => (current.rate < lowest.rate ? current : lowest));
     }
-    const formatCurrency = (value: number) => {
-        return new Intl.NumberFormat('pt-BR', {
-            style: 'currency',
-            currency: 'BRL'
-        }).format(value);
-    }
+    // const formatCurrency = (value: number) => {
+    //     return new Intl.NumberFormat('pt-BR', {
+    //         style: 'currency',
+    //         currency: 'BRL'
+    //     }).format(value);
+    // }
 
-    const getScheduleStatus = (status: string) => {
-        switch (status) {
-            case 'confirmed':
-                return <CheckCircle size={32} className='text-white' />
-                break;
-            case 'in-progress':
-                return <OfficeChair size={32} className='text-green-500' />
-                break;
-            case 'canceled':
-                return <ReceiptX size={32} className='text-red-500' />
-                break;
-            case 'finished':
-                return <FlagCheckered size={32} className='text-amber-500' />
-                break;
-            case 'pending':
-                return <HourglassHigh size={32} className='text-yellow-500' />
-                break;
-            default:
-                return <FileX size={32} className='text-white' />
-                break;
-        }
-    }
+    // const getScheduleStatus = (status: string) => {
+    //     switch (status) {
+    //         case 'confirmed':
+    //             return <CheckCircle size={32} className='text-white' />
+    //             break;
+    //         case 'in-progress':
+    //             return <OfficeChair size={32} className='text-green-500' />
+    //             break;
+    //         case 'canceled':
+    //             return <ReceiptX size={32} className='text-red-500' />
+    //             break;
+    //         case 'finished':
+    //             return <FlagCheckered size={32} className='text-amber-500' />
+    //             break;
+    //         case 'pending':
+    //             return <HourglassHigh size={32} className='text-yellow-500' />
+    //             break;
+    //         default:
+    //             return <FileX size={32} className='text-white' />
+    //             break;
+    //     }
+    // }
 
     async function updateScheduleStatus(id: number, status: string) {
         if (!token) {

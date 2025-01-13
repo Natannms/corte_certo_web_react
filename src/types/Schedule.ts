@@ -1,5 +1,3 @@
-import { Consumption } from "./Consumption";
-import { User } from "./User";
 // Tipos base
 type BaseEntity = {
     id: number;

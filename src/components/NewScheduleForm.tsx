@@ -28,15 +28,22 @@ const NewScheduleForm = ({loadingData}:Props) => {
                 setUnscheduledBarbers([])
                 throw new Error(data.error);
             }
-            
-            console.log(data);
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+            console.log(defaultAttendant);
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
             setAvailableTimes(data.availableTimes);
-
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
             if(data.defaultAttendant){
-                setDefaultAttendant(data.defaultAttendant)
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                setDefaultAttendant(data.defaultAttendant!)
             }
-
-            setUnscheduledBarbers(data.unscheduledBarbersList);
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            setUnscheduledBarbers(data.unscheduledBarbersList!);
         } catch (error) {
             toast((error as Error).message, {type:"error"})
         }

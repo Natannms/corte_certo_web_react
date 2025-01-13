@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, ChevronDown, ArrowLeftCircle, ArrowRightCircle, CheckCircle, Clock, XCircle, AlertCircle, User } from 'lucide-react';
+import { Calendar, ChevronDown, ArrowLeftCircle, ArrowRightCircle, CheckCircle, Clock, XCircle, AlertCircle } from 'lucide-react';
 import { Schedule } from 'src/types/Schedule';
 import { formatToBrazilTime } from '../utils/convert';
 
@@ -12,8 +12,8 @@ type Props = {
     previusSchedule: () => void;
 };
 
-const getScheduleStatus = (status: string) => {
-    const statusConfig = {
+const getScheduleStatus = (status: string): {icon: JSX.Element, class:string} => {
+    const statusConfig:any = {
         'confirmed': {
             icon: <CheckCircle className="w-4 h-4 text-emerald-500" />,
             class: 'bg-emerald-500/10 text-emerald-500'
