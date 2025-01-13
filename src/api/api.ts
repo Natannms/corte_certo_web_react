@@ -145,13 +145,20 @@ export async function createSubscription(billingType: "BOLETO" | "CREDIT_CARD" |
             body: JSON.stringify({ billingType }),
         });
 
+
+        
         if (!response.ok) {
             const errorMessage = await response.json();
             return { error: `Failed to create subscription: ${errorMessage}` };
         }
-
+        const data = await response.json()
+        console.log(data);
+        
+        
         return response;
     } catch (error) {
+        console.log(error);
+        
         return { error: `Network error: ${(error as Error).message}` };
 
     }
