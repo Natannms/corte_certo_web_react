@@ -1,4 +1,4 @@
-import { useUserStore, useHairCutStore } from '../contexts';
+import { useUserStore, useHairCutStore, useBarberShopStore } from '../contexts';
 import React, { useState } from 'react';
 import { createSchedule, getAvailableDates } from '../../src/api/api';
 import { UnscheduledBarbers } from '../../src/types/Paginated';
@@ -15,14 +15,22 @@ const NewScheduleForm = ({loadingData}:Props) => {
     const [selectedTime, setSelectedTime] = useState('');
     const [selectedBarber, setSelectedBarber] = useState(0);
     const [selectedHaircut, setSelectedHaircut] = useState(0);
+    const [selectedBarberShop, setSelectedBarberShop] = useState(0);
     const { token } = useUserStore();
+    const { barberShops } = useBarberShopStore();
     const { haircuts } = useHairCutStore()
     const [isLoading, setIsLoading] = useState<boolean>(false)
     const handleDateChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const date = e.target.value;
         setSelectedDate(date);
         try {
-            const data = await getAvailableDates(token);
+            const barberShopId = barberShops.length > 1 ? selectedBarberShop : barberShops[0].id
+            if(!barberShopId){
+                toast("Unidade não selecionada")
+                return
+            }
+
+            const data = await getAvailableDates(token, barberShopId);
             if(data.error){
                 setAvailableTimes([])
                 setUnscheduledBarbers([])
@@ -61,7 +69,8 @@ const NewScheduleForm = ({loadingData}:Props) => {
             time: formData.get('time') as string,
             barber: formData.get('barber') as string,
             hairCut: formData.get('haircut') as string,
-            phone: formData.get('phone') as string
+            phone: formData.get('phone') as string,
+            barberShopId: formData.get('barberShopId') as string
         };
 
         const err = scheduleFormValidate(formValues)
@@ -93,7 +102,36 @@ const NewScheduleForm = ({loadingData}:Props) => {
 
     return (
         <form onSubmit={onsubmit} className="flex flex-col gap-4 w-full">
-            <div className="form-field">
+          
+            {barberShops &&(
+                <div className="form-field">
+                <label className="form-label">Barbearias Disponíveis</label>
+                <div className="text-sm text-gray-400">
+                    unidade(s) disponível(is)
+                </div>
+                <div className="form-control">
+                    <select
+                        disabled={isLoading}
+                        name="barberShopId"
+                        className="select max-w-full"
+                        value={barberShops.length > 1 ? selectedBarberShop : barberShops[0].id}
+                        onChange={(e) => setSelectedBarberShop(Number(e.target.value))}
+                    >
+                         
+                        {barberShops.length > 1 &&   <option value="">Selecione um a unidade</option>}
+                        {barberShops.length > 1 ?
+                            barberShops.map((barberShop) => (
+                                <option key={barberShop.id} value={barberShop.id}>
+                                    {barberShop.name}
+                                </option>
+                            )) : 
+                            <option selected value={barberShops[0].id} key={barberShops[0].id}>{barberShops[0].name}</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            )}
+             <div className="form-field">
                 <label className="form-label">Data do Agendamento</label>
                 <div className="form-control relative">
                     <input
@@ -149,7 +187,8 @@ const NewScheduleForm = ({loadingData}:Props) => {
                     </div>
                 </div>
             )}
-
+             
+            
             {unscheduledBarbers && unscheduledBarbers.length > 0 &&(
                 <div className="form-field">
                     <label className="form-label">Barbeiros Disponíveis</label>

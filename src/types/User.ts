@@ -9,3 +9,8 @@ export type User = {
     updatedAt: Date
     barberShop: BarberShop
 }
+
+export type Configs = {
+    type: string;
+    message: string
+  }

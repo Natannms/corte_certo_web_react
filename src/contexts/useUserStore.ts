@@ -1,7 +1,9 @@
+import { Configs } from '../../src/types/User';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
 interface UserState {
+  configs: Configs[]
   token: string;
   name: string;
   expiredSubscriptionAccount: boolean;
@@ -10,6 +12,7 @@ interface UserState {
   setExpiredTrialAccount: (status: boolean) => void;
   setToken: (token: string) => void;
   setName: (name: string) => void;
+  setConfigs:  (configs: Configs[]) => void;
 }
 
 export const useUserStore = create<UserState>()(
@@ -19,6 +22,8 @@ export const useUserStore = create<UserState>()(
       name: '',
       expiredTrialAccount: false,
       expiredSubscriptionAccount: false,
+      configs: [],
+      setConfigs: (configs: Configs[]) => set(() => ({ configs })),
       setExpiredSubscriptionAccount: (status: boolean) => set(() => ({ expiredSubscriptionAccount: status })),
       setExpiredTrialAccount: (status: boolean) => set(() => ({ expiredTrialAccount: status })),
       setToken: (token: string) => set(() => ({ token })),

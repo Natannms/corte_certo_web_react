@@ -1,8 +1,10 @@
 // import { HairCut } from "src/types/Haircut";
+import { BarberShop } from "src/types/BarberShop";
 import { HairCut } from "src/types/Haircut";
 import { AvailableTimesPaginated, BarberShopPaginated, HairCutPaginated, ProductPaginated, RatesPaginated, SchedulesPaginated } from "src/types/Paginated";
 import { Product } from "src/types/Product";
 import { Schedule } from "src/types/Schedule";
+import { Configs } from "src/types/User";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 // const API_BASE_URL =  "https://cortecertots-536925599617.us-east4.run.app"; 
@@ -40,6 +42,8 @@ export type AuthResponse = {
         profilePhotoPath: string;
         createdAt: string;
         updatedAt: string;
+        barbershop: BarberShop[],
+        configs: Configs[]
     }
 }
 
@@ -112,7 +116,6 @@ export async function login(data: LoginData): Promise<AuthResponse> {
 
     }
 }
-
 export async function register(data: RegisterData): Promise<Response | ErrorResponse> {
     try {
         const response = await fetch(`${API_BASE_URL}/auth/register`, {
@@ -308,7 +311,6 @@ export async function inviteColaborator(email: string, token: string, barberShop
 
     }
 }
-
 export async function getHaircuts(token: string): Promise<HairCutPaginated> {
     try {
 
@@ -332,10 +334,10 @@ export async function getHaircuts(token: string): Promise<HairCutPaginated> {
         return { error: `Network error: ${(error as Error).message}`, data: [], total: 0, totalPages: 0 };
     }
 }
-export async function getAvailableDates(token: string): Promise<AvailableTimesPaginated> {
+export async function getAvailableDates(token: string, barberShopId:string | number): Promise<AvailableTimesPaginated> {
     try {
 
-        const response = await fetch(`${API_BASE_URL}/available-dates?barberShopId=1`, {
+        const response = await fetch(`${API_BASE_URL}/available-dates?barberShopId=${barberShopId}`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -364,7 +366,6 @@ export async function getAvailableDates(token: string): Promise<AvailableTimesPa
         }
     }
 }
-
 export async function getBarberShops(token: string): Promise<BarberShopPaginated> {
     try {
 

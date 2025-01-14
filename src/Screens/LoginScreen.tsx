@@ -3,13 +3,14 @@ import bg from '../assets/backgrounds/signin.jpg';
 import { NavigateFunction, useNavigate } from 'react-router-dom';
 import Lottie from "lottie-react";
 import loadingLottie from "../assets/lottie/loading.json";
-import { useUserStore } from '../contexts/useUserStore';
+import { useUserStore, useBarberShopStore } from '../contexts';
 import { toast } from 'react-toastify';
 import { AuthResponse, login } from '../../src/api/api';
 
 const LoginScreen = () => {
     const navigate: NavigateFunction = useNavigate();
-    const { setName, setToken, setExpiredSubscriptionAccount, setExpiredTrialAccount } = useUserStore();
+    const { setName, setToken, setExpiredSubscriptionAccount, setExpiredTrialAccount, setConfigs, } = useUserStore();
+    const { setBarberShops } = useBarberShopStore();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -28,6 +29,8 @@ const LoginScreen = () => {
             const { user, token } = response;
             if (token && user) {
                 console.log("login screen", user.expiredTrialAccount);
+                setBarberShops(response.user!.barbershop);
+                setConfigs(response.user!.configs)
                 setName(user.name)
                 setToken(token)
                 setIsLoading(false)
