@@ -31,7 +31,8 @@ const ProductTable = () => {
                     {products.map((item: Product) => {
                         return (
                             <tr key={item.id}>
-                                <td><img src={`http://localhost:8080/product-image/${item.imageName}`} className='rounded w-8 h-8' alt="" /></td>
+                                {/* <td><img src={`http://localhost:8080/product-image/${item.imageName}`} className='rounded w-8 h-8' alt="" /></td> */}
+                                <td><img src={`${item.imageUrl}`} className='rounded w-8 h-8' alt="" /></td>
                                 <td>{item.name}</td>
                                 <td>{item.description}</td>
                                 <td className='hidden md:flex'>{ToBRL(item.price)}</td>
