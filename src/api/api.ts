@@ -188,6 +188,28 @@ export async function deleteUser(id: number, token: string): Promise<DefaultResp
 
     }
 }
+export async function deleteProduct(id: number, token: string): Promise<DefaultResponse | ErrorResponse> {
+    try {
+        const response = await fetch(`${API_BASE_URL}/products/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+
+        if (!response.ok) {
+            const errorMessage = await response.json();
+            console.log(errorMessage)
+            return { error: `Failed to delete: ${errorMessage}` };
+        }
+
+        return { message: "Deletado com sucesso !" };
+    } catch (error) {
+        return { error: `Network error: ${(error as Error).message}` };
+
+    }
+}
 export async function createSchedule(data: any, token: string): Promise<ScheduleResponse> {
     try {
         const response = await fetch(`${API_BASE_URL}/schedules`, {

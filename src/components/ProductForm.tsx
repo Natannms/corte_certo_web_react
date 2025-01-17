@@ -1,5 +1,5 @@
 import React, { useState } from 'react'  
-import { createProduct } from '../api/api';
+import { createProduct, getProducts } from '../api/api';
 import {useUserStore, useProductStore} from '../contexts'
 import { toast } from 'react-toastify';
 import { X } from '@phosphor-icons/react';
@@ -12,7 +12,7 @@ const ProductForm = () => {
     const [image, setImage] = useState<File | null>(null);
 
     const {token} = useUserStore()
-    const {addProduct, setShowCreateForm} = useProductStore()
+    const {setProducts, setShowCreateForm} = useProductStore()
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
@@ -30,7 +30,16 @@ const ProductForm = () => {
         try {
            const response = await createProduct(formData, token)
            if(response.data){
-               addProduct(response.data)
+         
+            const productsResult = await getProducts(token);
+            if (productsResult.error) {
+                toast(productsResult.error);
+                    return;
+            }
+    
+            if (productsResult.data) {
+                setProducts(productsResult.data);
+            }
            }
             // Lidar com a resposta aqui
             toast(response.message, {type:"success"});
