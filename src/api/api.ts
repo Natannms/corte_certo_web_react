@@ -92,10 +92,38 @@ interface UpdateResponse {
     error?: string;
     data?: any;
 }
-
+export interface NearbySearchResponse {
+    shops: BarberShop[];
+    userLocation: {
+      lat: number;
+      lon: number;
+    };
+  }
 type CreateBarberShopResponse = UpdateResponse
 type CreateBarberShopData = BarberShopUpdateData
+export async function searchNearbyBarberShops(address: string): Promise<NearbySearchResponse | ErrorResponse> {
+    try {
+        const response = await fetch(`${API_BASE_URL}/search/nearby`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ address }),
+        });
 
+        if (!response.ok) {
+            const errorMessage = await response.json();
+            return { error: `Failed to search barbershops: ${errorMessage.error}` };
+        }
+
+        
+        const data = await response.json()
+        console.log(data);
+        return data ;
+    } catch (error) {
+        return { error: `Network error: ${(error as Error).message}` };
+    }
+}
 export async function login(data: LoginData): Promise<AuthResponse> {
     try {
         const response = await fetch(`${API_BASE_URL}/auth/login`, {
@@ -149,19 +177,19 @@ export async function createSubscription(billingType: "BOLETO" | "CREDIT_CARD" |
         });
 
 
-        
+
         if (!response.ok) {
             const errorMessage = await response.json();
             return { error: `Failed to create subscription: ${errorMessage}` };
         }
         const data = await response.json()
         console.log(data);
-        
-        
+
+
         return response;
     } catch (error) {
         console.log(error);
-        
+
         return { error: `Network error: ${(error as Error).message}` };
 
     }
@@ -217,6 +245,29 @@ export async function createSchedule(data: any, token: string): Promise<Schedule
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorMessage = await response.json();
+            return { error: `Failed to register: ${errorMessage}` };
+        }
+
+        const result = await response.json()
+
+        return { data: result, message: "Criado com suceso !" };
+    } catch (error) {
+        return { error: `Network error: ${(error as Error).message}` };
+
+    }
+}
+export async function createScheduleExternal(data: any): Promise<ScheduleResponse> {
+    try {
+        const response = await fetch(`${API_BASE_URL}/schedules-external`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
             },
             body: JSON.stringify(data),
         });
@@ -356,7 +407,7 @@ export async function getHaircuts(token: string): Promise<HairCutPaginated> {
         return { error: `Network error: ${(error as Error).message}`, data: [], total: 0, totalPages: 0 };
     }
 }
-export async function getAvailableDates(token: string, barberShopId:string | number): Promise<AvailableTimesPaginated> {
+export async function getAvailableDates(token: string, barberShopId: string | number): Promise<AvailableTimesPaginated> {
     try {
 
         const response = await fetch(`${API_BASE_URL}/available-dates?barberShopId=${barberShopId}`, {
@@ -373,17 +424,18 @@ export async function getAvailableDates(token: string, barberShopId:string | num
         }
 
         const data = await response.json();
-
+        console.log('available dates', data);
+        
         return data;
     } catch (error: any) {
         return {
             data: {
-                availableTimes:[],
-                defaultAttendant:0,
+                availableTimes: [],
+                defaultAttendant: 0,
                 unscheduledBarbersList: [],
             },
-            total:0,
-            totalPages:0,
+            total: 0,
+            totalPages: 0,
             error: error.message
         }
     }

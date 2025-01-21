@@ -17,6 +17,8 @@ import AcceptInviteColabScreen from './Screens/AcceptInviteColabScreen.tsx';
 import BarberShopConfigScreen from './Screens/Dashboard/BarberShopConfigScreen.tsx';
 import CTPaymentScreen from './Screens/CTPaymentScreen.tsx';
 import AccountScreen from './Screens/Dashboard/AccountScreen.tsx';
+import BarberSearchComponentOpenGoogleMaps from '../src/components/BarberSearchComponentOpenGoogleMaps';
+// import BarberSearchInternalMaps from '../src/components/BarberSearchInternalMaps.tsx';
 
 
 const router = createBrowserRouter([
@@ -39,6 +41,10 @@ const router = createBrowserRouter([
   {
     path: "/upgrade-account",
     element: <CTPaymentScreen />,
+  },
+  {
+    path: "/search-barber-shops",
+    element: <BarberSearchComponentOpenGoogleMaps />,
   },
   {
     path: "/login",
