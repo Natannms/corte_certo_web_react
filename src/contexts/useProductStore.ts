@@ -9,6 +9,7 @@ interface ProductState {
     setShowCreateForm: () => void;
     setProducts: (list: Product[]) => void;
     addProduct: (product: Product) => void; 
+    setSelectedProduct: (product: Product | null) => void; 
 }
 
 export const useProductStore = create<ProductState>()(
@@ -19,6 +20,7 @@ export const useProductStore = create<ProductState>()(
             showCreateForm: false,
             setShowCreateForm: () => set((state) => ({ showCreateForm: !state.showCreateForm })),
             setProducts: (list: Product[]) => set(() => ({ products: list })), 
+            setSelectedProduct: (product: Product | null) => set(() => ({ selectedProduct: product })), // Corrigido para atualizar 'haircuts'
             addProduct: (product: Product) => set((state) => ({ products: [...state.products, product] })), 
         }),
         {

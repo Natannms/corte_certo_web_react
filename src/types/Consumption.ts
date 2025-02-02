@@ -1,12 +1,15 @@
+import { HairCut } from "./Haircut"
+import { Product } from "./Product"
+
 export type Consumption = {
-    id:           number  
+    id?:           number  
     scheduleId:   number
-    productId:    number
-    hairCutId:    number
-    quantity:     number   // Quantidade de produtos ou serviços consumidos
-    createdAt:    Date  
-    updatedAt:    Date  
+    productId?:    number
+    hairCutId?:    number
+    quantity?:     number   // Quantidade de produtos ou serviços consumidos
+    createdAt?:    Date  
+    updatedAt?:    Date  
     schedule?:     number
-    product?:      any
-    hairCut?:      any
+    product?:      Product
+    hairCut?:      HairCut
 }

@@ -3,31 +3,54 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
 import { Navigation } from "swiper/modules";
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  PlayCircle, 
-  XCircle, 
-  Clock, 
-  Calendar, 
-  User 
+import {
+  ChevronLeft,
+  ChevronRight,
+  PlayCircle,
+  XCircle,
+  Clock,
+  Calendar,
+  User
 } from "lucide-react";
 import { useScheduleStore } from "../contexts/useScheduleStore";
 import { formatToBrazilTime } from "../utils/convert";
-import { DateFilterOption, filterSchedulesByDate } from '../utils/dateFilters';
-import ScheduleDateFilter from './ScheduleDateFilter';
+import {
+  DateFilterOption,
+  StatusFilterOption,
+  filterSchedules,
+  getFilterLabels
+} from '../utils/scheduleFilters';
+import { ScheduleDateFilter, ScheduleStatusFilter } from './ScheduleDateFilter';
+import { ScheduleButton } from './ScheduleButton';
+import { Schedule } from 'src/types/Schedule';
+import { ModalComponent } from './ModalComponent';
 
 type Props = {
   updateScheduleStatus: (id: number, token: string) => void;
 }
 
 export default function ScheduleSliderMobile({ updateScheduleStatus }: Props) {
-  const { schedules } = useScheduleStore();
-  const [dateFilter, setDateFilter] = useState<DateFilterOption>('thisWeek');
+  const { schedules, setSchedule, selectedSchedule } = useScheduleStore();
+  const [filters, setFilters] = useState({
+    dateFilter: 'thisWeek' as DateFilterOption,
+    statusFilter: 'all' as StatusFilterOption
+  });
 
   const filteredSchedules = useMemo(() => {
-    return filterSchedulesByDate(schedules, dateFilter);
-  }, [schedules, dateFilter]);
+    return filterSchedules(schedules, filters);
+  }, [schedules, filters]);
+
+  const filterLabel = useMemo(() => {
+    return getFilterLabels(filters);
+  }, [filters]);
+
+  function handleDateFilterChange(dateFilter: DateFilterOption) {
+    setFilters(prev => ({ ...prev, dateFilter }));
+  }
+
+  function handleStatusFilterChange(statusFilter: StatusFilterOption) {
+    setFilters(prev => ({ ...prev, statusFilter }));
+  }
 
   if (!schedules) {
     return (
@@ -37,15 +60,49 @@ export default function ScheduleSliderMobile({ updateScheduleStatus }: Props) {
     );
   }
 
+  function getScheduleStatusBadge(status: string) {
+    const statusStyles = {
+      'canceled': 'text-red-500',
+      'confirmed': 'text-indigo-500',
+      'in-progress': 'text-emerald-500'
+    } as const;
+
+    const statusClass = statusStyles[status as keyof typeof statusStyles] || '';
+
+    return (
+      <div className={`inline-block px-2 py-0.5 rounded-full backdrop-blur-sm bg-white ${statusClass}`}>
+        <p className="text-sm font-medium">
+          {status.toUpperCase()}
+        </p>
+      </div>
+    );
+  }
+
+  function handleSelectSchedule(schedule: Schedule) {
+    setSchedule(schedule)
+  }
+
   return (
     <div className="relative w-full max-w-md mx-auto">
-      {/* Filtro de Data */}
-      <ScheduleDateFilter
-        currentFilter={dateFilter}
-        onFilterChange={setDateFilter}
-      />
+      {/* Filtros */}
+      <div className="mb-4 flex gap-2">
+        <ScheduleDateFilter
+          currentFilter={filters.dateFilter}
+          onFilterChange={handleDateFilterChange}
+        />
 
-      {/* Botão Anterior */}
+        <ScheduleStatusFilter
+          handleStatusFilterChange={handleStatusFilterChange}
+          statusFilter={filters.statusFilter}
+        />
+      </div>
+
+      {/* Label do filtro atual */}
+      <div className="mb-4 text-sm text-gray-100">
+        {filterLabel}
+      </div>
+
+      {/* Navegação do Swiper */}
       <button
         className="absolute -left-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-sm rounded-full shadow-lg p-2 hover:bg-gray-50 transition-all duration-300 active:scale-95"
         id="prev-btn"
@@ -65,7 +122,7 @@ export default function ScheduleSliderMobile({ updateScheduleStatus }: Props) {
         className="w-full"
       >
         {filteredSchedules.length > 0 ? (
-          filteredSchedules.map((schedule) => (
+          filteredSchedules.map((schedule: Schedule) => (
             <SwiperSlide key={schedule.id}>
               <div className="rounded-xl shadow-lg overflow-hidden">
                 <div className="p-6 bg-gradient-to-br from-amber-100 to-amber-500">
@@ -103,11 +160,7 @@ export default function ScheduleSliderMobile({ updateScheduleStatus }: Props) {
                       </div>
                       <div className="space-y-4">
                         <div className="flex items-center gap-2 text-black/90">
-                          <div className="inline-block px-2 py-0.5 rounded-full bg-white/10 backdrop-blur-sm">
-                            <p className="text-sm font-medium text-black">
-                              {schedule.status}
-                            </p>
-                          </div>
+                          {getScheduleStatusBadge(schedule.status)}
                         </div>
                         <div className="flex items-center gap-2 text-black/90">
                           <User className="w-4 h-4" />
@@ -121,21 +174,48 @@ export default function ScheduleSliderMobile({ updateScheduleStatus }: Props) {
                     {/* Action Buttons */}
                     <div className="space-y-2 pt-2">
                       {schedule.status === 'confirmed' && (
-                        <button
-                          onClick={() => updateScheduleStatus(schedule.id, 'in-progress')}
-                          className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 px-4 rounded-lg transition-all duration-300 active:scale-95 hover:shadow-lg"
-                        >
-                          <PlayCircle className="w-5 h-5" />
-                          <span className="text-sm md:font-medium">Iniciar Atendimento</span>
-                        </button>
+                        <>
+                          <ScheduleButton
+                            scheduleId={schedule.id}
+                            newStatus="in-progress"
+                            onUpdateStatus={updateScheduleStatus}
+                          >
+                            <PlayCircle className="w-5 h-5" />
+                            <span className="text-sm md:font-medium">
+                              Iniciar Atendimento
+                            </span>
+                          </ScheduleButton>
+                          <label
+                            className="bg-blue-600 hover:bg-blue-700 w-full flex items-center justify-center gap-2 text-white py-2.5 px-4 rounded-lg transition-all duration-300 active:scale-95 hover:shadow-lg"
+                            htmlFor='modal-consumption'
+                            onClick={()=> handleSelectSchedule(schedule)}
+
+                          >
+                           <PlayCircle className="w-5 h-5" />
+                            <span className="text-sm md:font-medium">
+                              Visualizar consumo
+                            </span>
+                          </label>
+
+                          <ScheduleButton
+                            scheduleId={schedule.id}
+                            newStatus="canceled"
+                            variant="danger"
+                            onUpdateStatus={updateScheduleStatus}
+                          >
+                            <XCircle className="w-5 h-5" />
+                            <span className="text-sm md:font-medium">
+                              Cancelar Agendamento
+                            </span>
+                          </ScheduleButton>
+                        </>
                       )}
-                      <button
-                        onClick={() => updateScheduleStatus(schedule.id, 'canceled')}
-                        className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white py-2.5 px-4 rounded-lg transition-all duration-300 active:scale-95 hover:shadow-lg"
-                      >
-                        <XCircle className="w-5 h-5" />
-                        <span className="text-sm md:font-medium">Cancelar Agendamento</span>
-                      </button>
+
+                      {schedule.status === 'in-progress' && (
+                        <div className='z-50 relative'>
+                          <label className="btn btn-primary" htmlFor="modal-consumption" onClick={() => setSchedule(schedule)}>Adicionar consumo</label>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -147,9 +227,9 @@ export default function ScheduleSliderMobile({ updateScheduleStatus }: Props) {
             <div className="rounded-xl shadow-lg overflow-hidden">
               <div className="p-6 flex items-center justify-center min-h-[300px] bg-white">
                 <p className="text-gray-500">
-                  {dateFilter === 'all' 
+                  {filters.dateFilter === 'all' && filters.statusFilter === 'all'
                     ? 'Nenhum agendamento disponível'
-                    : 'Nenhum agendamento encontrado para o período selecionado'
+                    : 'Nenhum agendamento encontrado para os filtros selecionados'
                   }
                 </p>
               </div>
@@ -165,6 +245,8 @@ export default function ScheduleSliderMobile({ updateScheduleStatus }: Props) {
       >
         <ChevronRight className="w-5 h-5 text-gray-700" />
       </button>
+      <ModalComponent htmlFor='modal-consumption' schedule={selectedSchedule!} />
+
     </div>
   );
 }

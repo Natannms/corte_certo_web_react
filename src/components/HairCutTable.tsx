@@ -1,19 +1,32 @@
 import { ToBRL } from '../utils/convert';
-import { useHairCutStore } from '../contexts/index';
+import { useHairCutStore, useUserStore } from '../contexts/index';
 import { HairCut } from 'src/types/Haircut';
 import { Pencil, Trash } from '@phosphor-icons/react';
+import { deleteHairCut } from '../../src/api/api';
+import { toast } from 'react-toastify';
+type Props ={
+    updateTable: ()=> void
+}
 
-const HairCutTable = () => {
+const HairCutTable = ({updateTable}:Props) => {
     const { haircuts } = useHairCutStore();
+    const { token } = useUserStore();
 
-    async function handleDeleteHairCut(id:number) {
+    async function handleDeleteHairCut(id: number) {
         const confirmDelete = window.confirm("Você tem certeza que deseja excluir este serviço?");
         if (confirmDelete) {
-            // Aqui você pode adicionar a lógica para realmente excluir o corte de cabelo
-            alert(`Serviço com ID ${id} foi excluído!`);
+            const result = await deleteHairCut(id, token)
+            if (result.error) {
+                toast(result.error, { type: 'error' })
+                updateTable()
+                return
+            }
+
+            toast(result.message, { type: 'success' })
+            updateTable()
         }
     }
-
+  
     return (
         <div className="flex flex-col gap-4 p-4 w-full overflow-x-auto">
             <h2 className='text-2xl text-white'>Lista de serviços</h2>
@@ -32,7 +45,7 @@ const HairCutTable = () => {
                     {haircuts.map((haircut: HairCut) => {
                         return (
                             <tr key={haircut.id}>
-                                <td><img src={`${haircut.imageUrl}`}  className='rounded w-8 h-8' alt="" /></td>
+                                <td><img src={`${haircut.imageUrl}`} className='rounded w-8 h-8' alt="" /></td>
                                 <td>{haircut.name}</td>
                                 <td>{haircut.description}</td>
                                 <td>{ToBRL(haircut.price)}</td>

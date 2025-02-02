@@ -9,10 +9,12 @@ const HairCutForm = () => {
     const [description, setDescription] = useState<string>('');
     const [price, setPrice] = useState<number | ''>('');
     const [image, setImage] = useState<File | null>(null);
-    const { token } = useUserStore()
+    const { token, configs, setConfigs} = useUserStore()
     const { setHaircuts, setShowCreateForm } = useHairCutStore()
+    const {removeConfigByType} =  useUserStore()
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
+        const newConfigs = configs;
 
         const formData = new FormData();
         formData.append('name', name);
@@ -35,12 +37,31 @@ const HairCutForm = () => {
                 }
 
                 if (haircutResult.data) {
+                    if(haircutResult.data.length > 0){
+                        removeConfigByType("hairCutConfig")
+                    }else{
+                        newConfigs.push({
+                            type: 'hairCutConfig',
+                            message: "Clique no menu e cadastre serviços e cortes antes de começar a usar"
+                        })
+        
+                        toast('Clique no menu e cadastre serviços e cortes antes de começar a usar', {
+                            closeOnClick: false,
+                            pauseOnHover: true,
+                            theme: 'colored',
+                            type: 'warning',
+                            autoClose: 5000,
+                        })
+                    }
+                    setConfigs(newConfigs)
                     setHaircuts(haircutResult.data);
                 }
             }
             // Lidar com a resposta aqui
             toast(response.message, { type: "success" });
             setShowCreateForm()
+            removeConfigByType("hairCutConfig")
+
         } catch (error) {
             toast('Erro ao registrar novo corte ou serviço:' + error, { type: 'error' });
             console.error('Erro ao registrar novo corte ou serviço:', error);
