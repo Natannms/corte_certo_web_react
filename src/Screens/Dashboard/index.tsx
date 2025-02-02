@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getBarberShops, getHaircuts, getProducts, getRates, getSchedules, updateSchedule } from '../../api/api'; // Importando a nova função
 import { NavigateFunction, useNavigate } from 'react-router-dom';
-import { Scissors, Sparkle, ThumbsDown, StackPlus, List, Package, Warehouse } from '@phosphor-icons/react'; // Adicionando ícone para schedules
+import { Scissors, Sparkle, ThumbsDown, StackPlus, List, Package, Warehouse, ChartLineUp } from '@phosphor-icons/react'; // Adicionando ícone para schedules
 import { Rate } from 'src/types/Rate';
 import { useUserStore, useHairCutStore, useScheduleStore, useRateStore, useProductStore, useBarberShopStore } from '../../contexts/';
 import { toast, ToastContainer } from 'react-toastify';
@@ -11,6 +11,7 @@ import ScheduleSliderMobile from '../../components/ScheduleSliderMobile';
 import ServicesAccordion from '../../components/ServicesAccordion';
 import ScheduleListAccordion from '../../components/ScheduleListAccordion';
 import { DockIcon } from 'lucide-react';
+import { BarberShop } from 'src/types/BarberShop';
 
 const Dashboard = () => {
     const navigate: NavigateFunction = useNavigate();
@@ -21,12 +22,12 @@ const Dashboard = () => {
     const [highestRate, setHighestRate] = useState<Rate | null>(null)
     const [lowestRate, setLowestRate] = useState<Rate | null>(null)
     const [averateRate, setAverageRate] = useState<number>(0)
-    const { token, expiredTrialAccount, expiredSubscriptionAccount } = useUserStore()
+    const { token, expiredTrialAccount, expiredSubscriptionAccount, setConfigs, configs } = useUserStore()
     const { setHaircuts, haircuts } = useHairCutStore()
     const { setProducts } = useProductStore()
     const { setSchedules, schedules } = useScheduleStore()
     const { setBarberShops } = useBarberShopStore()
-    const { setRates } = useRateStore()
+    const { setRates, Rates } = useRateStore()
     const { name } = useUserStore()
     //paginate Schedule 
 
@@ -47,6 +48,8 @@ const Dashboard = () => {
         }, 3000);
     }
     async function preLoading() {
+        const newConfigs = configs;
+
         // Carregar franquias
         const barberShopResult = await getBarberShops(token);
 
@@ -62,6 +65,22 @@ const Dashboard = () => {
         }
 
         if (barberShopResult.data) {
+            barberShopResult.data.forEach((item: BarberShop) => {
+                if (!item.endWork || !item.startWork) {
+                    newConfigs.push({
+                        type: 'barberShopConfig',
+                        message: "Clique no menu, franquias, selecione suas barbearias defina horarios de entrada e saída"
+                    })
+
+                    toast('Suas barbearias precisam de configuração de entrada e saída para começar a usar todos os recursos', {
+                        closeOnClick: false,
+                        pauseOnHover: true,
+                        theme: 'colored',
+                        type: 'warning',
+                        autoClose: 5000,
+                    })
+                }
+            })
             setBarberShops(barberShopResult.data);
         }
 
@@ -79,6 +98,20 @@ const Dashboard = () => {
         }
 
         if (haircutResult.data) {
+            if (haircutResult.data.length <= 0) {
+                newConfigs.push({
+                    type: 'hairCutConfig',
+                    message: "Clique no menu e cadastre serviços e cortes antes de começar a usar"
+                })
+
+                toast('Clique no menu e cadastre serviços e cortes antes de começar a usar', {
+                    closeOnClick: false,
+                    pauseOnHover: true,
+                    theme: 'colored',
+                    type: 'warning',
+                    autoClose: 5000,
+                })
+            }
             setHaircuts(haircutResult.data);
         }
         // Carregar produtos
@@ -95,6 +128,7 @@ const Dashboard = () => {
         }
 
         if (productsResult.data) {
+
             setProducts(productsResult.data);
         }
 
@@ -125,10 +159,13 @@ const Dashboard = () => {
             return;
         }
 
+        setConfigs(newConfigs)
         setRates(ratesResult.data);
         setHighestRate(getHighestRate(ratesResult.data))
         setLowestRate(getLowestRate(ratesResult.data))
         setAverageRate(calculateAverageRate(ratesResult.data))
+
+        console.log(ratesResult.data);
     }
     async function loadingData() {
         loading();
@@ -139,8 +176,8 @@ const Dashboard = () => {
             }
 
             if (expiredTrialAccount) {
-              navigate('/upgrade-account')
-              return
+                navigate('/upgrade-account')
+                return
             }
 
             preLoading()
@@ -175,35 +212,7 @@ const Dashboard = () => {
 
         return data.reduce((lowest, current) => (current.rate < lowest.rate ? current : lowest));
     }
-    // const formatCurrency = (value: number) => {
-    //     return new Intl.NumberFormat('pt-BR', {
-    //         style: 'currency',
-    //         currency: 'BRL'
-    //     }).format(value);
-    // }
 
-    // const getScheduleStatus = (status: string) => {
-    //     switch (status) {
-    //         case 'confirmed':
-    //             return <CheckCircle size={32} className='text-white' />
-    //             break;
-    //         case 'in-progress':
-    //             return <OfficeChair size={32} className='text-green-500' />
-    //             break;
-    //         case 'canceled':
-    //             return <ReceiptX size={32} className='text-red-500' />
-    //             break;
-    //         case 'finished':
-    //             return <FlagCheckered size={32} className='text-amber-500' />
-    //             break;
-    //         case 'pending':
-    //             return <HourglassHigh size={32} className='text-yellow-500' />
-    //             break;
-    //         default:
-    //             return <FileX size={32} className='text-white' />
-    //             break;
-    //     }
-    // }
 
     async function updateScheduleStatus(id: number, status: string) {
         if (!token) {
@@ -211,7 +220,6 @@ const Dashboard = () => {
             navigate('/login', { replace: true });
             return;
         }
-
         await updateSchedule(token, id, { status })
         await loadingData();
     }
@@ -261,6 +269,10 @@ const Dashboard = () => {
                                     <li className="menu-item" onClick={() => navigate("/franchise")}>
                                         <Warehouse size={24} />
                                         <span>Franquias</span>
+                                    </li>
+                                    <li className="menu-item" onClick={() => navigate("/financial-report")}>
+                                        <ChartLineUp  size={24} />
+                                        <span>Relatório financeiro</span>
                                     </li>
                                     <li className="menu-item">
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 opacity-75" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -408,29 +420,32 @@ const Dashboard = () => {
                         <List size={32} className='text-amber-500' />
                     </label>
                 </div>
-                <div className='w-full bg-stone-800 p-4 rounded flex flex-col gap-4 '>
-                    <div className='flex gap-4'>
-                        <div className='bg-stone-800'>
-                            <label className="btn bg-amber-700 flex gap-4 md:w-48 w-full justify-center" htmlFor="modal-2">
-                                <span className='md:block text-sm'>Agendamento</span> <StackPlus size={16} color='white' />
-                            </label>
 
-                        </div>
-                        <div className='bg-stone-800'>
-                            <label className="btn bg-amber-700 flex gap-4 md:w-48 w-full justify-center" onClick={() => { alert("Ainda não é possivel ver relatorios") }}>
-                                <span className='md:block text-sm'>Relatórios</span> <DockIcon size={16} color='white' />
-                            </label>
+                {!['barberShopConfig', 'hairCutConfig'].every(requiredType => configs.some(config => config.type === requiredType)) &&
+                    <div className='w-full bg-stone-800 p-4 rounded flex flex-col gap-4 '>
+                        <div className='flex gap-4'>
+                            <div className='bg-stone-800'>
+                                <label className="btn bg-amber-700 flex gap-4 md:w-48 w-full justify-center" htmlFor="modal-2">
+                                    <span className='md:block text-sm'>Agendamento</span> <StackPlus size={16} color='white' />
+                                </label>
 
+                            </div>
+                            <div className='bg-stone-800'>
+                                <label className="btn bg-amber-700 flex gap-4 md:w-48 w-full justify-center" onClick={() => { alert("Ainda não é possivel ver relatorios") }}>
+                                    <span className='md:block text-sm'>Relatórios</span> <DockIcon size={16} color='white' />
+                                </label>
+
+                            </div>
                         </div>
                     </div>
+                }
 
-                </div>
 
 
                 <div className="flex flex-col gap-4 items-start w-full mb-4">
                     {error && <div className="bg-red-500"> {error} </div>}
                     <div className='w-full bg-stone-800 p-4 rounded flex flex-col md:flex-row gap-4 items-center justify-items-center'>
-                        {schedules.filter((schedule) => schedule.status === 'confirmed').length <= 0 &&
+                        {schedules.filter((schedule) => schedule.status === 'finished').length <= 0 &&
                             <div className='md:w-5/12 w-full  p-4 rounded flex flex-col gap-4'>
                                 <h1 className='text-2xl font-bold text-center md:text-left'>Avaliações</h1>
                                 <div className='flex gap-8 items-center pt-10'>

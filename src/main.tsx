@@ -18,6 +18,7 @@ import BarberShopConfigScreen from './Screens/Dashboard/BarberShopConfigScreen.t
 import CTPaymentScreen from './Screens/CTPaymentScreen.tsx';
 import AccountScreen from './Screens/Dashboard/AccountScreen.tsx';
 import BarberSearchComponentOpenGoogleMaps from '../src/components/BarberSearchComponentOpenGoogleMaps';
+import FinancialReport from './Screens/Dashboard/FinancialReport.tsx';
 // import BarberSearchInternalMaps from '../src/components/BarberSearchInternalMaps.tsx';
 
 
@@ -41,6 +42,10 @@ const router = createBrowserRouter([
   {
     path: "/upgrade-account",
     element: <CTPaymentScreen />,
+  },
+  {
+    path: "/financial-report",
+    element: <FinancialReport  />,
   },
   {
     path: "/search-barber-shops",

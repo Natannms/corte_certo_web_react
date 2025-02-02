@@ -1,5 +1,6 @@
 // import { HairCut } from "src/types/Haircut";
 import { BarberShop } from "src/types/BarberShop";
+import { Consumption } from "src/types/Consumption";
 import { HairCut } from "src/types/Haircut";
 import { AvailableTimesPaginated, BarberShopPaginated, HairCutPaginated, ProductPaginated, RatesPaginated, SchedulesPaginated } from "src/types/Paginated";
 import { Product } from "src/types/Product";
@@ -8,7 +9,28 @@ import { Configs } from "src/types/User";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 // const API_BASE_URL =  "https://cortecertots-536925599617.us-east4.run.app"; 
-
+export interface FinancialReportData {
+    totalRevenue: number;
+    productRevenue: number;
+    serviceRevenue: number;
+    averageTicket: number;
+    topProducts: {
+      id: number;
+      name: string;
+      totalQuantity: number;
+      totalRevenue: number;
+    }[];
+    topServices: {
+      id: number;
+      name: string;
+      totalQuantity: number;
+      totalRevenue: number;
+    }[];
+    dailyRevenue: {
+      date: string;
+      revenue: number;
+    }[];
+  }
 interface LoginData {
     email: string;
     password: string;
@@ -216,6 +238,28 @@ export async function deleteUser(id: number, token: string): Promise<DefaultResp
 
     }
 }
+export async function deleteHairCut(id: number, token: string): Promise<DefaultResponse | ErrorResponse> {
+    try {
+        const response = await fetch(`${API_BASE_URL}/hairCuts/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+
+        if (!response.ok) {
+            const errorMessage = await response.json();
+            console.log(errorMessage)
+            return { error: `Failed to delete: ${errorMessage}` };
+        }
+
+        return { message: "Deletado com sucesso !" };
+    } catch (error) {
+        return { error: `Network error: ${(error as Error).message}` };
+
+    }
+}
 export async function deleteProduct(id: number, token: string): Promise<DefaultResponse | ErrorResponse> {
     try {
         const response = await fetch(`${API_BASE_URL}/products/${id}`, {
@@ -303,6 +347,57 @@ export async function createHaircut(data: FormData, token: string): Promise<Hair
         const result = await response.json()
 
         return { data: result, message: "Criado com suceso !" };
+    } catch (error) {
+        return { error: `Network error: ${(error as Error).message}` };
+
+    }
+}
+export async function createConsumption(data: Partial<Consumption>, token: string): Promise<ProductResponse> {
+    try {
+
+        console.log(data, 'token', token);
+        
+        const response = await fetch(`${API_BASE_URL}/consumptions`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorMessage = await response.json();
+            return { error: `Failed to register new consumption item : ${errorMessage}` };
+        }
+
+        const result = await response.json()
+
+        return { data: result, message: "Criado com suceso !" };
+    } catch (error) {
+        return { error: `Network error: ${(error as Error).message}` };
+
+    }
+}
+export async function deleteConsumption(id: number, token: string): Promise<ProductResponse> {
+    try {
+        
+        const response = await fetch(`${API_BASE_URL}/consumptions/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            const errorMessage = await response.json();
+            return { error: `Failed to delete a consumption item : ${errorMessage}` };
+        }
+
+        const result = await response.json()
+
+        return { data: result, message: "Deletado com suceso !" };
     } catch (error) {
         return { error: `Network error: ${(error as Error).message}` };
 
@@ -612,4 +707,38 @@ export async function createBarberShop(
         return { error: `Network error: ${(error as Error).message}` };
     }
 }
+
+export async function getFinancialReport(
+    token: string,
+    startDate?: string,
+    endDate?: string
+  ): Promise<{ data?: FinancialReportData; error?: string }> {
+    try {
+      const queryParams = new URLSearchParams();
+      if (startDate) queryParams.append('startDate', startDate);
+      if (endDate) queryParams.append('endDate', endDate);
+  
+      const response = await fetch(
+        `${API_BASE_URL}/reports/financial?${queryParams.toString()}`,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      console.log('response',response);
+      
+      if (!response.ok) {
+        const err = await response.json();
+        return { error: `Failed to get financial report: ${err.message}` };
+      }
+  
+      const data = await response.json();
+      return { data };
+    } catch (error) {
+      return { error: `Network error: ${(error as Error).message}` };
+    }
+  }
 

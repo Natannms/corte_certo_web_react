@@ -4,7 +4,8 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 
 interface HaircutState {
     haircuts: HairCut[];
-    selectedHairCut: HairCut | null;
+    selectedHairCut: HairCut  | undefined | null;
+    setSelectedHairCut: (haircut: HairCut | null)=> void
     showCreateForm: boolean
     setShowCreateForm: ()=> void
     setHaircuts: (list: HairCut[]) => void;
@@ -16,9 +17,10 @@ export const useHairCutStore = create<HaircutState>()(
         (set) => ({
             haircuts: [],
             showCreateForm: false,
-            selectedHairCut: null,
+            selectedHairCut: undefined,
             setShowCreateForm: () => set((state) => ({ showCreateForm: !state.showCreateForm })),
             setHaircuts: (list: HairCut[]) => set(() => ({ haircuts: list })), // Corrigido para atualizar 'haircuts'
+            setSelectedHairCut: (haircut: HairCut | null) => set(() => ({ selectedHairCut: haircut })), // Corrigido para atualizar 'haircuts'
             addHaircut: (haircut: HairCut) => set((state) => ({ haircuts: [...state.haircuts, haircut] })), // Adiciona um novo haircut à lista
         }),
         {
