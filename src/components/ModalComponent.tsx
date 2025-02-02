@@ -69,10 +69,19 @@ export function ModalComponent(props: ModalProps) {
 
 function ConsumptionModalContent() {
   const { token } = useUserStore()
-  const { setSchedules, selectedSchedule } = useScheduleStore()
+  const { setSchedules, selectedSchedule, setSchedule } = useScheduleStore() // Adicione setSelectedSchedule
 
-  const deleteConsumption = (consumptionId: number) => {
-     deleteItemToConsumption(consumptionId, token)
+  const deleteConsumption = async (consumptionId: number) => {
+    await deleteItemToConsumption(consumptionId, token)
+    // Atualiza localmente e no servidor
+    if (selectedSchedule) {
+      const updatedConsumptions = selectedSchedule.consumptions.filter(c => c.id !== consumptionId)
+      setSchedule({
+        ...selectedSchedule,
+        consumptions: updatedConsumptions
+      })
+    }
+    updateSchedule()
   }
 
   const calculateTotal = () => {
@@ -89,6 +98,17 @@ function ConsumptionModalContent() {
     }, 0)
   }
 
+  async function updateSchedule() {
+    const scheduleResult = await getSchedules(token);
+    if (scheduleResult.error) {
+      toast("Erro ao atualizar agendamentos. para isso sua tela será recarregada", { type: 'error' });
+      window.location.href = '/dashboard'
+      return;
+    }
+    setSchedules(scheduleResult.data);
+    toast("Agendamento atualizado", { type: 'success' });
+  }
+
   const createNewConsumption = async (consumption: Partial<Consumption>) => {
     const result = await createConsumption(consumption, token)
     if (result.error) {
@@ -96,13 +116,36 @@ function ConsumptionModalContent() {
       return
     }
 
+    // Atualiza schedules e consequentemente o selectedSchedule
     const scheduleResult = await getSchedules(token);
     if (scheduleResult.error) {
-      toast("Erro au atualizar agendamentos. para isso sua tela será recarregada", { type: 'error' });
+      toast("Erro ao atualizar agendamentos. Para isso sua tela será recarregada", { type: 'error' });
       window.location.href = '/dashboard'
       return;
     }
-    setSchedules(scheduleResult.data);
+
+    // Garante que scheduleResult.data é um array de Schedule
+    const schedules = scheduleResult.data as Schedule[];
+
+    // Encontra o schedule atualizado
+    const updatedSchedule = schedules.find(
+      (schedule) => schedule.id === selectedSchedule?.id
+    );
+
+    if (!updatedSchedule) {
+      toast("Erro ao atualizar consumo", { type: 'error' });
+      return;
+    }
+
+    // Atualiza os schedules garantindo que não há undefined
+    setSchedules(
+      schedules.map((schedule) => {
+        if (schedule.id === selectedSchedule?.id) {
+          return updatedSchedule;
+        }
+        return schedule;
+      })
+    );
 
     toast(result.message, { type: 'success' })
   }
