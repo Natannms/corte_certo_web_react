@@ -59,7 +59,7 @@ const AcceptInviteColabScreen = () => {
             ></div>
 
             <form onSubmit={handleSubmit} className="bg-stone-800 p-8 w-full flex flex-col justify-center items-center">
-                <h1 className="text-4xl font-bold mb-8">Barber Shop App</h1>
+                <h1 className="text-4xl font-bold mb-8">Corte Certo</h1>
                 <div className="w-8/12">
                     <input
                         required
