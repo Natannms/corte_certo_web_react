@@ -223,10 +223,20 @@ const BarberSearchComponentOpenGoogleMaps: React.FC = () => {
       <ToastContainer />
       {/* Search Box */}
       <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-4">Encontre Barbearias Próximas</h1>
-        <p className="text-gray-300 mb-6">Digite seu endereço e encontre as melhores barbearias da sua região</p>
+        
         {!searchResults && (
-          <img src={imageHero} alt="Visual Financeiro" className="w-full max-w-md rounded-lg" />
+          <>
+            <h1 className="text-4xl font-bold mb-4">Encontre Barbearias Próximas</h1>
+            <p className="text-gray-300 mb-6">Digite seu endereço e encontre as melhores barbearias da sua região</p>
+          </>
+        )
+      }
+      <img src={imageHero} alt="Visual Financeiro" className="w-full max-w-md rounded-lg" />
+      {searchResults && (
+          <div className="bg-red-500 flex-col justify-center items-center">
+            <h1 className="text-4xl font-bold mb-4">Veja Mais</h1>
+            <p className="text-gray-300 mb-6">Algumas alternativas encontradas</p>
+          </div>
         )
       }
         <div className="flex flex-col md:flex-row gap-4">
