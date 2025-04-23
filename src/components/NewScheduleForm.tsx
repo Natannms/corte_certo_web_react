@@ -103,7 +103,7 @@ const NewScheduleForm = ({loadingData}:Props) => {
     return (
         <form onSubmit={onsubmit} className="flex flex-col gap-4 w-full">
           
-            {barberShops &&(
+            {barberShops &&  barberShops.length >= 1 &&(
                 <div className="form-field">
                 <label className="form-label">Barbearias Disponíveis</label>
                 <div className="text-sm text-gray-400">
